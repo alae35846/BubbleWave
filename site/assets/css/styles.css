@@ -407,6 +407,35 @@ output,
    Header
    ========================================================================== */
 
+.top-credit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(127, 240, 255, 0.12);
+  background: #04101c;
+  color: rgba(189, 248, 255, 0.62);
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1.35;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.top-credit strong {
+  color: #7ff0ff;
+  font-weight: 800;
+}
+
+.top-credit span + span::before {
+  content: "·";
+  margin-right: 12px;
+  color: rgba(127, 240, 255, 0.45);
+}
+
 .site-header {
   position: sticky;
   top: 0;
@@ -2965,6 +2994,17 @@ body.is-presenting .lab-grid {
     width: 100%;
     padding-inline: 8px;
     font-size: 0.7rem;
+  }
+
+  .top-credit {
+    gap: 4px 8px;
+    padding: 7px 12px;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+  }
+
+  .top-credit span + span::before {
+    margin-right: 8px;
   }
 
   .hero-inner {

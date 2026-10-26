@@ -48,8 +48,8 @@ export const SITE = Object.freeze({
   course: "Propagation dans les milieux — GSR1",
   school: "ENSA Tanger",
   year: "2026 / 2027",
-  // Laissez vide pour masquer la ligne « réalisé par ».
-  author: "",
+  // Auteur du projet.
+  author: "Touil Alae",
   // URL complète du dépôt GitHub. Laissez vide pour masquer les liens.
   github: "https://github.com/alae35846/BubbleWave",
   email: "",

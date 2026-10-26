@@ -2,6 +2,8 @@
 
 **Propagation d'ondes électromagnétiques dans un mur en béton à bulles.**
 
+**Auteur : Touil Alae** — ENSA Tanger, filière GSR1, 2026 / 2027.
+
 Un simulateur pédagogique interactif : un mur de béton sec de **9,0 cm**, des bulles d'air dont on fait varier la **porosité**, et une onde plane qui arrive dessus à une fréquence, un angle et une polarisation réglables.
 
 Le site calcule en temps réel les coefficients de réflexion **R**, de transmission **T** et d'absorption **A**, trace les courbes associées et montre le champ électrique à l'intérieur de la paroi.
@@ -104,4 +106,4 @@ Ce simulateur ne constitue pas un outil de dimensionnement ou de certification.
 
 ---
 
-Projet pédagogique — ENSA Tanger, filière GSR1, 2026 / 2027.
+Projet pédagogique de **Touil Alae** — ENSA Tanger, filière GSR1, 2026 / 2027.
