@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://alae35846.github.io/BubbleWave/sitemap.xml

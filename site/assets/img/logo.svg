@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Logo BubbleWave : une vague et des bulles">
+  <defs>
+    <linearGradient id="bw-navy" x1="18" y1="12" x2="112" y2="118" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0b2a4a"/>
+      <stop offset="0.55" stop-color="#123f6b"/>
+      <stop offset="1" stop-color="#0a1d35"/>
+    </linearGradient>
+    <linearGradient id="bw-cyan" x1="28" y1="98" x2="104" y2="44" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7ff0ff"/>
+      <stop offset="0.5" stop-color="#23c7e8"/>
+      <stop offset="1" stop-color="#1479bb"/>
+    </linearGradient>
+    <linearGradient id="bw-white" x1="24" y1="82" x2="104" y2="38" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#c8f7ff"/>
+    </linearGradient>
+    <filter id="bw-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <circle cx="64" cy="64" r="59" fill="url(#bw-navy)"/>
+  <circle cx="64" cy="64" r="59" fill="none" stroke="#6fe7f7" stroke-opacity=".22" stroke-width="1.5"/>
+  <path d="M18 85c14-28 30 2 45-17 12-15 24-1 47-24" fill="none" stroke="url(#bw-white)" stroke-width="11" stroke-linecap="round" filter="url(#bw-glow)"/>
+  <path d="M18 101c16-22 30 6 47-11 13-13 25 0 47-20" fill="none" stroke="url(#bw-cyan)" stroke-width="8" stroke-linecap="round" opacity=".95"/>
+  <path d="M31 70c7-12 15-9 22-16" fill="none" stroke="#9cefff" stroke-width="3.2" stroke-linecap="round" opacity=".8"/>
+  <g fill="#bdf8ff">
+    <circle cx="93" cy="28" r="4.2"/>
+    <circle cx="105" cy="39" r="2.8" opacity=".85"/>
+    <circle cx="86" cy="18" r="2.2" opacity=".65"/>
+  </g>
+  <g stroke="#8beeff" stroke-width="1.5" opacity=".45">
+    <path d="M93 28l12 11"/>
+    <path d="M93 28l-7-10"/>
+  </g>
+  <g fill="none" stroke="#ffffff" stroke-opacity=".16" stroke-width="1.2">
+    <circle cx="40" cy="40" r="10"/>
+    <circle cx="52" cy="28" r="4.5"/>
+  </g>
+</svg>
