@@ -69,7 +69,7 @@
         <button class="icon-btn" id="theme-toggle" type="button" aria-label="Basculer le thème clair / sombre" title="Thème clair / sombre">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v2.2M12 18.8V21M4.22 4.22l1.56 1.56M18.22 18.22l1.56 1.56M3 12h2.2M18.8 12H21M4.22 19.78l1.56-1.56M18.22 5.78l1.56-1.56"/><circle cx="12" cy="12" r="3.6"/></svg>
         </button>
-        <a class="icon-btn" id="github-link" href="https://github.com/" target="_blank" rel="noreferrer" aria-label="Code source sur GitHub" title="Code source sur GitHub">
+        <a class="icon-btn" id="github-link" href="https://github.com/alae35846/BubbleWave" target="_blank" rel="noreferrer" aria-label="Code source BubbleWave sur GitHub" title="Code source sur GitHub">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.5c.48.09.65-.2.65-.46v-1.8c-2.65.58-3.2-1.14-3.2-1.14-.44-1.1-1.06-1.4-1.06-1.4-.86-.59.07-.58.07-.58.95.07 1.45.98 1.45.98.85 1.45 2.22 1.03 2.76.79.09-.61.33-1.03.6-1.27-2.11-.24-4.33-1.06-4.33-4.7 0-1.04.37-1.89.98-2.55-.1-.24-.43-1.2.09-2.51 0 0 .8-.26 2.6.97a9 9 0 0 1 4.74 0c1.8-1.23 2.6-.97 2.6-.97.52 1.31.19 2.27.09 2.51.61.66.98 1.51.98 2.55 0 3.65-2.22 4.45-4.34 4.69.34.29.64.87.64 1.75v2.6c0 .26.17.56.66.46A9.5 9.5 0 0 0 12 2.5Z"/></svg>
         </a>
         <button class="btn btn-sm btn-outline" id="present-btn" type="button">Présenter</button>
@@ -292,13 +292,13 @@
 
             <div class="control-group control-group--hero">
               <div class="control-label-row">
-                <label for="bubble-slider">Densité de bulles</label>
+                <label for="bubble-slider">Porosité volumique</label>
                 <output id="bubble-value" for="bubble-slider">20,0 %</output>
               </div>
               <input id="bubble-slider" class="range range--bubble" type="range" min="0" max="0.5" step="0.005" value="0.2" aria-describedby="bubble-help" />
               <div class="range-labels"><span>0 %</span><span>25 %</span><span>50 %</span></div>
               <p class="control-help" id="bubble-help">
-                Fraction volumique d'air dans le béton. À 50 %, les bulles occupent la moitié du volume.
+                Fraction volumique d'air dans le béton. À 50 %, l'air occupe la moitié du volume. À porosité égale, le nombre de bulles dépend aussi de leur taille.
               </p>
               <div class="preset-row" id="preset-row" aria-label="Valeurs rapides de porosité"></div>
             </div>
@@ -337,7 +337,7 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
                 Mur verrouillé par le protocole
               </div>
-              <p>Le matériau et l’épaisseur sont fixés. Seule la porosité est une variable d’étude. *Paramètres distincts du tableau 3 ITU-R.</p>
+              <p>Le matériau, l’épaisseur et le rayon des bulles sont fixés dans ce protocole. La porosité est la variable d’étude. Ces paramètres sont distincts de l’exemple ITU-R P.2040-4.</p>
               <dl class="wall-facts">
                 <div><dt>Matériau</dt><dd>Béton sec</dd></div>
                 <div><dt>Épaisseur</dt><dd>9,0 cm</dd></div>
