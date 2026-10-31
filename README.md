@@ -35,7 +35,7 @@ Les relations et les hypothèses sont détaillées directement dans la section *
 - milieux parfaits et équations de Maxwell ;
 - milieux dissipatifs, permittivité complexe et atténuation ;
 - ondes stationnaires, impédance, TOS / ROS ;
-- anisotropic et milieux effectifs.
+- milieux anisotropes et milieux effectifs.
 
 ## Utiliser le site
 
