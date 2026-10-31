@@ -1,0 +1,25 @@
+name: Tests du modèle physique
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  physics-tests:
+    name: Vérifications numériques
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le dépôt
+        uses: actions/checkout@v4
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Exécuter les tests du noyau physique
+        run: node --test tests/*.test.mjs
