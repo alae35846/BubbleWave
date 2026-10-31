@@ -3165,3 +3165,145 @@ body.is-presenting .lab-grid {
 .itu-note .itu-footnote{grid-column:1/-1;padding-top:10px;border-top:1px solid var(--line);font-size:.7rem}
 @media(max-width:1050px){.learning-grid{grid-template-columns:1fr 1fr}.learning-card--geometry{grid-row:span 2;grid-column:2}.learning-card:not(.learning-card--geometry){grid-column:1}}
 @media(max-width:700px){.learning-steps,.learning-grid{grid-template-columns:1fr}.learning-card--geometry,.learning-card:not(.learning-card--geometry){grid-column:auto;grid-row:auto}.learning-card{padding:18px}.itu-note{grid-template-columns:1fr;padding:17px}.itu-note .itu-footnote{grid-column:auto}}
+
+
+/* --------------------------------------------------------------------------
+   Rapport imprimable / export PDF
+   -------------------------------------------------------------------------- */
+@page {
+  size: A4;
+  margin: 14mm;
+}
+
+@media print {
+  :root,
+  [data-theme="dark"] {
+    color-scheme: light;
+    --bg: #fff;
+    --bg-soft: #fff;
+    --surface: #fff;
+    --surface-2: #f7fafc;
+    --surface-3: #eef4f7;
+    --text: #102b43;
+    --text-soft: #294764;
+    --muted: #52697d;
+    --line: rgba(11, 37, 69, .16);
+    --shadow-sm: none;
+    --shadow-md: none;
+    --shadow-lg: none;
+  }
+
+  body {
+    background: #fff !important;
+    color: #102b43 !important;
+    font-size: 10pt;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .top-credit,
+  .site-header,
+  .hero-actions,
+  .hero-scroll,
+  .learning-steps,
+  .control-actions,
+  .viz-actions,
+  .chart-actions,
+  .chart-tabs,
+  .presentation-hud,
+  .toast,
+  .site-footer,
+  .menu-btn,
+  .icon-btn,
+  #present-btn,
+  #theme-toggle,
+  #github-link,
+  #print-report-btn,
+  .skip-link {
+    display: none !important;
+  }
+
+  .hero {
+    min-height: 0 !important;
+    padding: 12mm 0 6mm !important;
+    break-after: avoid;
+  }
+
+  .hero-inner,
+  .lab-layout,
+  .learning-grid,
+  .analysis-grid,
+  .model-grid,
+  .about-grid {
+    display: block !important;
+    max-width: none !important;
+  }
+
+  .hero-visual {
+    display: none !important;
+  }
+
+  .section {
+    padding: 8mm 0 !important;
+    break-inside: avoid-page;
+  }
+
+  .section-head {
+    margin-bottom: 5mm !important;
+  }
+
+  .learning-card,
+  .viz-card,
+  .result-card,
+  .detail-card,
+  .chart-card,
+  .insight-card,
+  .model-card,
+  .validation-card,
+  .benchmark-card,
+  .about-card {
+    box-shadow: none !important;
+    break-inside: avoid;
+    margin-bottom: 5mm;
+  }
+
+  .viz-canvas-wrap {
+    min-height: 65mm !important;
+    height: 65mm !important;
+  }
+
+  #wave-canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .chart-canvas-wrap {
+    height: 72mm !important;
+  }
+
+  .theory-item,
+  details.theory-item {
+    display: block !important;
+    break-inside: avoid;
+  }
+
+  .theory-item > .theory-body {
+    display: block !important;
+  }
+
+  a {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+
+  h1, h2, h3, h4 {
+    break-after: avoid;
+  }
+
+  .site-header,
+  .section-head,
+  .result-grid,
+  .validation-row {
+    break-inside: avoid;
+  }
+}
