@@ -57,6 +57,7 @@
         <span class="brand-text">Bubble<em>Wave</em></span>
       </a>
       <nav class="main-nav" id="main-nav" aria-label="Navigation principale">
+        <a href="#parcours">Parcours</a>
         <a href="#simulateur">Simulateur</a>
         <a href="#analyse">Analyse</a>
         <a href="#modele">Modèle</a>
@@ -88,11 +89,11 @@
         <div class="hero-inner">
           <div class="hero-copy">
             <p class="eyebrow"><span class="eyebrow-dot"></span> ENSA Tanger · GSR1 · 2026 / 2027</p>
-            <h1 id="hero-title">Un mur. Des bulles.<br /><em>Une onde qui change de camp.</em></h1>
+            <h1 id="hero-title">Comprendre l’onde.<br /><em>Observer le mur à bulles.</em></h1>
             <p class="hero-lede">
-              Quand l'air s'infiltre dans le béton, l'indice effectif du mur baisse.
-              La réflexion recule, la transmission progresse. Faites varier la porosité
-              et lisez le résultat sur les coefficients <strong>Γ</strong> et <strong>T</strong>.
+              Commencez par une onde qui frappe le mur perpendiculairement. Observez les inclusions,
+              distinguez leur forme de leur silhouette, puis explorez l’incidence oblique.
+              Chaque étape relie une observation visuelle à un résultat physique.
             </p>
             <div class="hero-actions">
               <a class="btn btn-primary" href="#simulateur">
@@ -199,6 +200,78 @@
         <div class="hero-scroll"><span></span> faites défiler pour explorer</div>
       </section>
 
+
+<section id="parcours" class="section learning-section" aria-labelledby="learning-title">
+  <div class="section-head learning-heading">
+    <p class="eyebrow">Le parcours scientifique · 3 étapes</p>
+    <h2 id="learning-title">Partir du simple. Aller vers le réel.</h2>
+    <p>Un chemin progressif : incidence normale, géométrie des bulles, puis incidence oblique et ses effets sur l’onde.</p>
+  </div>
+  <div class="learning-steps" aria-label="Étapes du parcours">
+    <a class="learning-step is-current" href="#step-normal"><span>01</span><strong>Incidence normale</strong><small>θ = 0° · onde perpendiculaire</small></a>
+    <a class="learning-step" href="#step-shapes"><span>02</span><strong>Formes & silhouettes</strong><small>Sphère, ellipsoïde, forme irrégulière</small></a>
+    <a class="learning-step" href="#step-oblique"><span>03</span><strong>Incidence oblique</strong><small>θ augmente · TE / TM</small></a>
+  </div>
+  <div class="learning-grid">
+    <article class="learning-card" id="step-normal">
+      <div class="learning-card-top"><span class="learning-number">01</span><span class="learning-kicker">Point de départ</span></div>
+      <h3>Une onde arrive perpendiculairement</h3>
+      <p>À l’incidence normale, l’angle mesuré depuis la normale au mur vaut <strong>θᵢ = 0°</strong>. C’est le cas de référence pour lire réflexion, transmission et absorption.</p>
+      <div class="normal-equation"><span>θᵢ</span><strong>0°</strong><small>incidence normale</small></div>
+      <a class="text-link" href="#simulateur">Ouvrir le simulateur →</a>
+    </article>
+    <article class="learning-card learning-card--geometry" id="step-shapes">
+      <div class="learning-card-top"><span class="learning-number">02</span><span class="learning-kicker">Géométrie ≠ angle</span></div>
+      <h3>Une bulle n’est pas sa silhouette</h3>
+      <p>Choisissez une géométrie puis changez la direction d’observation. Une sphère garde une silhouette circulaire en projection orthographique.</p>
+      <div class="shape-controls" role="group" aria-label="Géométrie de l’inclusion">
+        <button type="button" class="shape-choice is-active" data-shape="sphere" aria-pressed="true">Sphère</button>
+        <button type="button" class="shape-choice" data-shape="ellipsoid" aria-pressed="false">Ellipsoïde</button>
+        <button type="button" class="shape-choice" data-shape="irregular" aria-pressed="false">Irrégulière</button>
+      </div>
+      <div class="shape-stage">
+        <svg class="shape-svg" viewBox="0 0 420 180" role="img" aria-labelledby="shape-title shape-desc">
+          <title id="shape-title">Silhouette circulaire d’une sphère</title><desc id="shape-desc">Illustration de la silhouette projetée d’une inclusion.</desc>
+          <defs><linearGradient id="shape-wall" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d8e8ef"/><stop offset="1" stop-color="#a9c3d2"/></linearGradient><radialGradient id="shape-fill" cx="32%" cy="28%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#73cfe0"/></radialGradient></defs>
+          <rect x="16" y="16" width="388" height="148" rx="14" fill="url(#shape-wall)" opacity=".42"/>
+          <path d="M28 52H392M28 90H392M28 128H392" stroke="#8aa9ba" stroke-dasharray="3 7" opacity=".55"/>
+          <path class="shape-silhouette" d="M210 45a45 45 0 1 0 0 90a45 45 0 1 0 0-90Z" fill="url(#shape-fill)" stroke="#087e9b" stroke-width="2.5"/>
+          <text x="32" y="36" fill="#31566b" font-size="10" font-weight="700">COUPE ILLUSTRATIVE</text><text x="388" y="151" text-anchor="end" fill="#31566b" font-size="10">pas à l’échelle</text>
+        </svg>
+        <div class="view-angle-row"><label for="view-angle">Direction d’observation</label><output id="view-angle-value">0°</output></div>
+        <input id="view-angle" type="range" min="0" max="80" step="5" value="0"/>
+        <div class="shape-note" id="shape-note" aria-live="polite">Sphère : la silhouette reste un cercle, quelle que soit la direction.</div>
+      </div>
+      <p class="learning-disclaimer">Illustration géométrique uniquement : elle ne modifie pas le calcul électromagnétique, qui représente les bulles par un milieu effectif.</p>
+    </article>
+    <article class="learning-card" id="step-oblique">
+      <div class="learning-card-top"><span class="learning-number">03</span><span class="learning-kicker">Après le cas simple</span></div>
+      <h3>Incliner l’onde, pas la sphère</h3>
+      <p>L’angle change la direction de propagation et les conditions de réflexion/transmission. Il ne transforme pas une bulle sphérique en ellipse.</p>
+      <div class="angle-demo">
+        <svg viewBox="0 0 340 180" role="img" aria-label="Rayon incident oblique, normale et rayon réfléchi">
+          <rect x="226" y="14" width="26" height="152" rx="5" fill="#163e60"/>
+          <path d="M226 90H44" stroke="#6d8ca1" stroke-dasharray="4 5"/>
+          <path id="learning-ray" d="M52 90L226 90" stroke="#0d9db8" stroke-width="3.5" stroke-linecap="round"/>
+          <path id="learning-reflected" d="M226 90L52 90" stroke="#e47768" stroke-width="2.5" stroke-dasharray="6 5"/>
+          <text x="22" y="20" fill="currentColor" font-size="10">onde incidente</text><text x="22" y="164" fill="currentColor" font-size="10">onde réfléchie</text><text x="263" y="90" fill="currentColor" font-size="11">mur</text>
+          <text id="learning-angle-label" x="178" y="78" fill="#087e9b" font-size="12" font-weight="700">0°</text>
+        </svg>
+        <div class="view-angle-row"><label for="incidence-demo">Angle d’incidence θᵢ</label><output id="incidence-demo-value">0°</output></div>
+        <input id="incidence-demo" type="range" min="0" max="80" step="5" value="0"/>
+      </div>
+      <div class="angle-callout"><strong>À retenir</strong><span>θᵢ est mesuré depuis la normale à la surface, pas depuis la surface elle-même.</span></div>
+      <a class="text-link" href="#simulateur">Tester l’angle dans le modèle →</a>
+    </article>
+  </div>
+  <aside class="itu-note" aria-label="Repère scientifique ITU-R P.2040-4">
+    <div><span class="itu-label">Repère documentaire · ITU-R P.2040-4</span><h3>Le matériau de référence doit être identifié clairement.</h3>
+    <p>Le tableau 3 donne, pour le béton sur 1–100 GHz, ε′ᵣ = 5,24 et σ = 0,0462 f⁰·⁷⁸²² S/m (f en GHz). Le scénario actuel (ε′ = 6 ; tan δ = 0,03) est différent : il est conservé comme scénario pédagogique distinct et ne doit pas être attribué à ce tableau.</p></div>
+    <div class="itu-values"><strong>5,24</strong><span>ε′ᵣ · béton</span><strong>1–100</strong><span>GHz · plage indicative</span></div>
+    <p class="itu-footnote">L’ITU-R décrit les propriétés électriques et la propagation dans les interfaces/couches. Le choix de Maxwell–Garnett pour homogénéiser les bulles est une hypothèse du projet, pas une prescription de ce document.</p>
+  </aside>
+</section>
+
       <section id="simulateur" class="section lab-section">
         <div class="section-head">
           <p class="eyebrow">01 — Laboratoire virtuel</p>
@@ -264,11 +337,11 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
                 Mur verrouillé par le protocole
               </div>
-              <p>Le matériau et l'épaisseur sont fixés. Seule la porosité est une variable d'étude.</p>
+              <p>Le matériau et l’épaisseur sont fixés. Seule la porosité est une variable d’étude. *Paramètres distincts du tableau 3 ITU-R.</p>
               <dl class="wall-facts">
                 <div><dt>Matériau</dt><dd>Béton sec</dd></div>
                 <div><dt>Épaisseur</dt><dd>9,0 cm</dd></div>
-                <div><dt>ε′ / tan δ</dt><dd>6,00 / 0,03</dd></div>
+                <div><dt>ε′ / tan δ</dt><dd>6,00 / 0,03*</dd></div>
                 <div><dt>Rayon des bulles</dt><dd>0,5 mm</dd></div>
                 <div><dt>Milieu extérieur</dt><dd>Air</dd></div>
               </dl>
@@ -809,6 +882,7 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+    <script type="module" src="assets/js/learning-path.js"></script>
     <script type="module" src="assets/js/app.js"></script>
   </body>
 </html>
