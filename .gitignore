@@ -1,0 +1,26 @@
+# Supports de cours et documents de travail (non publiés)
+chapitre-*.pdf
+chapitre-*.txt
+proto*.py
+search.py
+test-*.mjs
+tools/
+
+# Dépendances et artefacts
+node_modules/
+npm-debug.log*
+*.log
+coverage/
+dist/
+
+# Système et éditeurs
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Fichiers locaux
+.env
+.env.*
+!.env.example
