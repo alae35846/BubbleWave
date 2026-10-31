@@ -98,6 +98,13 @@ L'URL du site sera alors : `https://<compte>.github.io/BubbleWave/`.
 - Thème clair / sombre, mode présentation, partage par URL, export CSV et PNG.
 - Mise en page responsive, navigation clavier, texte alternatif et préférences de mouvement réduit.
 
+
+## Parcours pédagogique et référence ITU-R
+
+L'interface propose désormais un parcours en trois temps : incidence normale (0°), distinction entre géométrie d'une inclusion et silhouette projetée, puis incidence oblique. Les schémas de géométrie sont illustratifs et ne sont pas couplés au calcul électromagnétique.
+
+La Recommandation ITU-R P.2040-4, tableau 3, donne pour un exemple de béton sur 1–100 GHz : ε′r = 5,24 et σ = 0,0462 f^0,7822 S/m, avec f en GHz. Ces paramètres ne sont pas ceux du scénario actuel (ε′ = 6,00 ; tan δ = 0,03). Les deux scénarios ne doivent pas être confondus. Le modèle de Maxwell-Garnett utilisé pour représenter les bulles est une hypothèse du projet, distincte des méthodes de propagation dans les couches décrites par l'ITU-R.
+
 ## Hypothèses et limites
 
 Le modèle est volontairement pédagogique. Il suppose un mur homogène, isotrope, infini latéralement, à faces planes et parallèles ; des bulles sphériques, non conductrices, petites devant λ et sans interaction entre elles. La diffusion par les bulles, la rugosité de surface et les armatures du béton sont négligées. Maxwell-Garnett devient approximatif au-delà de 50 % de porosité.
