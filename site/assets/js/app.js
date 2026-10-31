@@ -1667,6 +1667,7 @@ function bindEvents() {
   dom.csvBtn?.addEventListener("click", exportCsv);
   dom.chartCsv?.addEventListener("click", exportCsv);
   dom.chartPng?.addEventListener("click", exportChartPng);
+  $id("print-report-btn")?.addEventListener("click", () => window.print());
 
   dom.playBtn?.addEventListener("click", () => {
     state.playing = !state.playing;

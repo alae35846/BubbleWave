@@ -35,7 +35,7 @@ Les relations et les hypothèses sont détaillées directement dans la section *
 - milieux parfaits et équations de Maxwell ;
 - milieux dissipatifs, permittivité complexe et atténuation ;
 - ondes stationnaires, impédance, TOS / ROS ;
-- anisotropic et milieux effectifs.
+- milieux anisotropes et milieux effectifs.
 
 ## Utiliser le site
 
@@ -97,6 +97,19 @@ L'URL du site sera alors : `https://<compte>.github.io/BubbleWave/`.
 - Graphiques interactifs : R/T vs porosité, fréquence, angle, et profil du champ.
 - Thème clair / sombre, mode présentation, partage par URL, export CSV et PNG.
 - Mise en page responsive, navigation clavier, texte alternatif et préférences de mouvement réduit.
+
+
+## Rapport et vérification continue
+
+- Le bouton **Rapport PDF** ouvre la boîte d'impression du navigateur : choisir « Enregistrer au format PDF » pour produire un document A4 avec les paramètres, résultats, graphiques et éléments théoriques visibles.
+- Les tests du noyau physique sont exécutés automatiquement par GitHub Actions à chaque pull request vers `main` et à chaque push sur `main` (`node --test tests/*.test.mjs`).
+- L'export PDF utilise l'impression native du navigateur : aucun service externe ni bibliothèque payante n'est nécessaire.
+
+## Parcours pédagogique et référence ITU-R
+
+L'interface propose désormais un parcours en trois temps : incidence normale (0°), distinction entre géométrie d'une inclusion et silhouette projetée, puis incidence oblique. Les schémas de géométrie sont illustratifs et ne sont pas couplés au calcul électromagnétique.
+
+La Recommandation ITU-R P.2040-4, tableau 3, donne pour un exemple de béton sur 1–100 GHz : ε′r = 5,24 et σ = 0,0462 f^0,7822 S/m, avec f en GHz. Ces paramètres ne sont pas ceux du scénario actuel (ε′ = 6,00 ; tan δ = 0,03). Les deux scénarios ne doivent pas être confondus. Le modèle de Maxwell-Garnett utilisé pour représenter les bulles est une hypothèse du projet, distincte des méthodes de propagation dans les couches décrites par l'ITU-R.
 
 ## Hypothèses et limites
 
