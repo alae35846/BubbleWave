@@ -99,6 +99,12 @@ L'URL du site sera alors : `https://<compte>.github.io/BubbleWave/`.
 - Mise en page responsive, navigation clavier, texte alternatif et préférences de mouvement réduit.
 
 
+## Rapport et vérification continue
+
+- Le bouton **Rapport PDF** ouvre la boîte d'impression du navigateur : choisir « Enregistrer au format PDF » pour produire un document A4 avec les paramètres, résultats, graphiques et éléments théoriques visibles.
+- Les tests du noyau physique sont exécutés automatiquement par GitHub Actions à chaque pull request vers `main` et à chaque push sur `main` (`node --test tests/*.test.mjs`).
+- L'export PDF utilise l'impression native du navigateur : aucun service externe ni bibliothèque payante n'est nécessaire.
+
 ## Parcours pédagogique et référence ITU-R
 
 L'interface propose désormais un parcours en trois temps : incidence normale (0°), distinction entre géométrie d'une inclusion et silhouette projetée, puis incidence oblique. Les schémas de géométrie sont illustratifs et ne sont pas couplés au calcul électromagnétique.
