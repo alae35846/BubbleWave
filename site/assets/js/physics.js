@@ -152,7 +152,12 @@ export function spheroidDepolarization(shape="sphere",aspectRatio=1) {
  if(shape==="oblate"){const e=Math.sqrt(q*q-1);const parallel=((1+e*e)/e**3)*(e-Math.atan(e));return {parallel,perpendicular:(1-parallel)/2};}
  throw new RangeError(`Silhouette inconnue : ${shape}`);
 }
-/** Maxwell-Garnett sphéroïdal moyenné sur des orientations aléatoires. */
+/** Maxwell-Garnett sphéroïdal moyenné sur des orientations aléatoires.
+ * Le cube utilise volontairement l'approximation isotrope de Maxwell-Garnett
+ * (même polarizabilité dipolaire effective qu'une inclusion sphérique) :
+ * la géométrie cubique est visualisée, mais ses effets de forme exacts ne sont
+ * pas résolus. Ne pas interpréter ce cas comme un solveur cubique exact.
+ */
 export function maxwellGarnettSpheroid(epsMatrix,epsInclusion,fraction,shape="sphere",aspectRatio=1){
  if(shape==="sphere"||shape==="cube"||Math.abs(aspectRatio-1)<1e-8)return maxwellGarnett(epsMatrix,epsInclusion,fraction);
  const phi=Math.min(.5,Math.max(0,fraction));if(phi===0)return {...epsMatrix};
