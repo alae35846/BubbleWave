@@ -20,6 +20,12 @@
    <label class="control"><span>Fréquence <output id="freqOut">1,00 GHz</output></span><input id="freq" type="range" min=".5" max="6" step=".05" value="1"><small>0,5 à 6 GHz · longueur d’onde dans l’air</small></label>
    <label class="control"><span>Angle d’incidence <output id="angleOut">0°</output></span><input id="angle" type="range" min="0" max="80" step="1" value="0"><small>Mesuré depuis la normale à la paroi</small></label>
    <div class="segmented"><button data-pol="TE" class="selected">TE</button><button data-pol="TM">TM</button></div><p class="micro">TE : champ électrique transverse au plan d’incidence. TM : champ magnétique transverse.</p>
+
+   <div class="layer-manager">
+    <div class="layer-manager-head"><b>Structure du mur</b><button type="button" id="addLayer" class="layer-add">＋ Ajouter une couche</button></div>
+    <p class="micro">Chaque couche possède son matériau et son épaisseur. Les couches de béton utilisent le modèle poreux ci-dessus.</p>
+    <div id="layerList" class="layer-list" aria-live="polite"></div>
+   </div>
   </section>
   <section class="control-group"><div class="group-title">Mur poreux <span>02</span></div>
    <label class="control"><span><span id="porLabel">Porosité volumique</span> <output id="porOut">20 %</output></span><input id="por" type="range" min="0" max="50" step="1" value="20"><small>Fraction volumique d’air dans le béton</small></label>
