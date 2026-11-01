@@ -111,6 +111,19 @@ L'interface propose désormais un parcours en trois temps : incidence normale (0
 
 La Recommandation ITU-R P.2040-4, tableau 3, donne pour un exemple de béton sur 1–100 GHz : ε′r = 5,24 et σ = 0,0462 f^0,7822 S/m, avec f en GHz. Ces paramètres ne sont pas ceux du scénario actuel (ε′ = 6,00 ; tan δ = 0,03). Les deux scénarios ne doivent pas être confondus. Le modèle de Maxwell-Garnett utilisé pour représenter les bulles est une hypothèse du projet, distincte des méthodes de propagation dans les couches décrites par l'ITU-R.
 
+## Inclusions configurables (nouveau laboratoire)
+
+Le laboratoire permet de choisir la forme des inclusions (sphère, sphéroïde allongé, sphéroïde aplati ou cube) et leur nature (air, eau liquide, glace ou granulat minéral). Pour l'eau, un curseur de saturation représente la part des pores remplie d'eau ; le calcul utilise un mélange air/eau simplifié puis Maxwell-Garnett dans la matrice béton.
+
+- Eau liquide : modèle de Debye simple à 25 °C, avec paramètres représentatifs (εs = 78,36 ; ε∞ = 5,2 ; τ = 8,27 ps), d'après le modèle de Liebe, Hufford et Manabe / les données de relaxation de l'eau. La permittivité est recalculée à chaque fréquence du balayage.
+- Glace et granulat minéral : valeurs constantes indicatives, à remplacer par des mesures propres au matériau étudié.
+- Cube : la scène affiche une géométrie cubique, mais le calcul conserve une approximation isotrope Maxwell-Garnett de type sphère équivalente. Il ne résout pas la polarizabilité exacte d'un cube.
+- La saturation partielle est une approximation homogénéisée hiérarchique, pas une reconstruction de pores connectés ou de films d'eau.
+
+Référence eau : [NTIA, A Model for the Complex Permittivity of Water at Frequencies Below 1 THz](https://its.ntia.gov/publications/details?pub=3412) ; paramètres de relaxation à 25 °C également discutés dans [Water Complex Dielectric and Polarization](https://vitroid.github.io/water-science/water/complex_dielectric.html).
+
+Le schéma de propagation affiche séparément l'onde incidente, réfléchie, le mur hétérogène et l'onde transmise. Il complète la scène 3D sans prétendre résoudre les champs locaux autour de chaque inclusion.
+
 ## Hypothèses et limites
 
 Le modèle est volontairement pédagogique. Il suppose un mur homogène, isotrope, infini latéralement, à faces planes et parallèles ; des bulles sphériques, non conductrices, petites devant λ et sans interaction entre elles. La diffusion par les bulles, la rugosité de surface et les armatures du béton sont négligées. Maxwell-Garnett devient approximatif au-delà de 50 % de porosité.
