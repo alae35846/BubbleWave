@@ -486,11 +486,14 @@ export function sweepFrequency({
   points = 241,
   shape = "sphere",
   aspectRatio = 1,
+  inclusionType = null,
+  saturation = 1,
 }) {
-  const epsWall = maxwellGarnettSpheroid(epsMatrix, epsInclusion, fraction, shape, aspectRatio);
   const rows = [];
   for (let i = 0; i < points; i += 1) {
     const f = frequencyMinHz + ((frequencyMaxHz - frequencyMinHz) * i) / (points - 1);
+    const phase = inclusionType ? porePermittivity(inclusionType, f, saturation) : epsInclusion;
+    const epsWall = maxwellGarnettSpheroid(epsMatrix, phase, fraction, shape, aspectRatio);
     const s = computeSlab({
       frequencyHz: f,
       thetaDeg,
