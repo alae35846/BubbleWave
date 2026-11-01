@@ -4,6 +4,7 @@ import { maxwellGarnettSpheroid,matrixPermittivity,computeSlab,sweepFrequency,el
 const $=id=>document.getElementById(id), fmt=(n,d=1)=>new Intl.NumberFormat('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(n), pct=n=>fmt(n*100,1)+' %';
 const s={f:1e9,angle:0,pol:'TE',por:.2,thick:.09,eps:6,loss:.03,radius:.5,shape:"sphere",aspect:2,inclusionType:"air",saturation:1,playing:true};
 const EPSAIR={re:1,im:0};let result,epsEff,renderer,scene,camera,orbit,wall,bubbleGroup,waveGroup,clock;
+const wavefronts={incident:[],reflected:[],inside:[],transmitted:[]};
 const host=$('scene');scene=new THREE.Scene();scene.fog=new THREE.Fog(0x091725,9,22);camera=new THREE.PerspectiveCamera(38,1,.1,100);camera.position.set(4.4,3.1,6.7);
 renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.25;host.appendChild(renderer.domElement);
 orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;orbit.target.set(0,0,0);orbit.minDistance=3;orbit.maxDistance=14;
@@ -15,7 +16,33 @@ const edges=new THREE.LineSegments(new THREE.EdgesGeometry(wall.geometry),new TH
 bubbleGroup=new THREE.Group();scene.add(bubbleGroup);
 const seed=()=>{let x=173;return()=>{x=(x*1664525+1013904223)>>>0;return x/4294967296}};
 function rebuildBubbles(){bubbleGroup.clear();const rand=seed(),count=Math.round(12+s.por*95),radius=.045+s.radius*.014;for(let i=0;i<count;i++){const r=radius*(.55+rand()*.9),geometry=s.shape==='cube'?new THREE.BoxGeometry(r*1.65,r*1.65,r*1.65):new THREE.SphereGeometry(r,22,16),m=new THREE.Mesh(geometry,new THREE.MeshPhysicalMaterial({color:$('bubbleColor').value,metalness:.05,roughness:.12,transparent:true,opacity:.72,transmission:.28,thickness:.12,clearcoat:1}));if(s.shape==='prolate')m.scale.set(1,1,s.aspect);else if(s.shape==='oblate')m.scale.set(1,1,1/s.aspect);m.rotation.set(rand()*Math.PI,rand()*Math.PI,rand()*Math.PI);m.position.set((rand()-.5)*2.8,(rand()-.5)*2.55,(rand()-.5)*.57);bubbleGroup.add(m)}}
-function rebuildWaves(){waveGroup?.removeFromParent();waveGroup=new THREE.Group();scene.add(waveGroup);const colors=[0x63d8ed,0xff806f,0x50d6ad];for(let k=0;k<3;k++){const g=new THREE.Group();for(let i=0;i<5;i++){const ring=new THREE.Mesh(new THREE.TorusGeometry(.32+i*.09,.009,5,72),new THREE.MeshBasicMaterial({color:colors[k],transparent:true,opacity:.72-i*.1}));ring.rotation.y=Math.PI/2;ring.position.x=(k===0?-2.8:k===1?-2.8:2.8)+(k===0?i*.27:k===1?-i*.22:-i*.22);g.add(ring)}if(k===1)g.rotation.y=Math.PI;waveGroup.add(g)}}
+function makeWavefront(color,opacity){
+ const geometry=new THREE.PlaneGeometry(2.85,2.55);
+ const material=new THREE.MeshBasicMaterial({color,transparent:true,opacity,side:THREE.DoubleSide,depthWrite:false,blending:THREE.AdditiveBlending});
+ const mesh=new THREE.Mesh(geometry,material);
+ const outline=new THREE.LineSegments(new THREE.EdgesGeometry(geometry),new THREE.LineBasicMaterial({color,transparent:true,opacity:Math.min(.9,opacity*5),depthWrite:false}));
+ mesh.add(outline);mesh.rotation.y=s.angle*Math.PI/180;
+ return mesh;
+}
+function rebuildWaves(){
+ waveGroup?.removeFromParent();waveGroup=new THREE.Group();scene.add(waveGroup);
+ Object.values(wavefronts).forEach(a=>a.length=0);
+ const add=(zone,color,count,opacity)=>{for(let i=0;i<count;i++){const m=makeWavefront(color,opacity);waveGroup.add(m);wavefronts[zone].push(m)}};
+ add('incident',0x63d8ed,4,.13);add('reflected',0xff806f,4,.12);
+ add('inside',0xf3b85f,3,.16);add('transmitted',0x50d6ad,4,.13);
+ updateWavefronts(0);
+}
+function updateWavefronts(t){
+ const speed=.72,phase=t*.001*speed;
+ const set=(items,base,span,direction,offset)=>items.forEach((m,i)=>{
+  m.position.z=base+direction*((phase+i*offset)%span);
+  m.rotation.y=s.angle*Math.PI/180;
+ });
+ set(wavefronts.incident,3.15,2.72,-1,.68);
+ set(wavefronts.reflected,.43,2.72,1,.68);
+ set(wavefronts.inside,.30,.58,-1,.20);
+ set(wavefronts.transmitted,-.43,2.72,-1,.68);
+}
 rebuildBubbles();rebuildWaves();
 function resize(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}new ResizeObserver(resize).observe(host);resize();
 function calculate(){s.f=+$('freq').value*1e9;s.angle=+$('angle').value;s.por=+$('por').value/100;s.thick=+$('thick').value/100;s.eps=+$('eps').value;s.loss=+$('loss').value;s.radius=+$('radius').value;s.aspect=+$('aspect').value;s.shape=$('shape').value;s.inclusionType=$('inclusionType').value;s.saturation=+$('saturation').value/100;
@@ -27,33 +54,23 @@ for(const [id,v] of [['barR',result.R],['barT',result.T],['barA',result.absorpti
 $('balance').textContent='R + T + A = '+fmt((result.R+result.T+result.absorption)*100,3)+' %';$('balanceState').textContent=Math.abs(result.R+result.T+result.absorption-1)<1e-9?'Conservation vérifiée':'Vérifier le bilan';
 $('epsEff').textContent=fmt(epsEff.re,3)+' − j'+fmt(Math.abs(epsEff.im),3);$('indexEff').textContent=fmt(result.nReal,3);$('lambdaWall').textContent=fmt(result.lambdaWall*100,2)+' cm';$('atten').textContent=fmt(result.attenuationDb,2)+' dB';
 function updateRayDiagram(){
- const theta=s.angle*Math.PI/180;
- const n=Math.max(1.001,Math.sqrt(Math.max(.01,epsEff.re)));
- const theta2=Math.asin(Math.min(.999,Math.sin(theta)/n));
- const deg=x=>fmt(x*180/Math.PI,1)+'°';
- const x0=320,y0=105,xL=145,xR=620;
- const rayLength=100;
- const xIncident=x0-rayLength*Math.cos(theta), yIncident=y0+rayLength*Math.sin(theta);
- const xReflected=x0-rayLength*Math.cos(theta), yReflected=y0-rayLength*Math.sin(theta);
- const yInside=y0-Math.tan(theta2)*110;
- const xTransmit=430+55*Math.cos(theta), yExit=yInside-55*Math.sin(theta);
+ const theta=s.angle*Math.PI/180,deg=x=>fmt(x*180/Math.PI,1)+'°';
+ const y=105,x0=320;
+ const xIncident=x0-105*Math.cos(theta),yIncident=y+105*Math.sin(theta);
+ const xReflected=x0-105*Math.cos(theta),yReflected=y-105*Math.sin(theta);
  const set=(id,d)=>{const el=$(id);if(el)el.setAttribute('d',d)};
- set('incidentRay',`M${xIncident} ${yIncident}L${x0} ${y0}`);
- set('reflectedRay',`M${x0} ${y0}L${xReflected} ${yReflected}`);
- set('refractedRay',`M${x0} ${y0}L430 ${yInside}`);
- set('transmittedRay',`M430 ${yInside}L${xTransmit} ${yExit}`);
- const arc=(cx,cy,r,a,side=1)=>{const x1=cx-r*Math.cos(a),y1=cy+side*r*Math.sin(a),x2=cx-r,y2=cy;return `M${x2} ${y2}A${r} ${r} 0 0 0 ${x1} ${y1}`};
- set('thetaIncidentArc',arc(x0,y0,40,theta,1));
- set('thetaReflectedArc',arc(x0,y0,54,theta,-1));
- set('thetaRefractedArc',arc(x0,y0,27,theta2,-1));
- $('incidentLabel').textContent='INCIDENTE · θᵢ = '+deg(theta);
- $('reflectedLabel').textContent='RÉFLÉCHIE · θᵣ = '+deg(theta);
- $('refractedLabel').textContent='RÉFRACTÉE · θ₂ = '+deg(theta2);
- $('rayThetaI').textContent=s.angle===0?'0° · incidence normale':deg(theta)+' · oblique';
- $('rayThetaR').textContent=deg(theta);
- $('rayTheta2').textContent=deg(theta2);
- $('rayThetaOut').textContent=deg(theta);
+ set('incidentRay',`M${xIncident} ${yIncident}L${x0} ${y}`);
+ set('reflectedRay',`M${x0} ${y}L${xReflected} ${yReflected}`);
+ set('transmittedRay',`M430 ${y}L620 ${y}`);
+ const inc=$('incidentLabel'),ref=$('reflectedLabel');
+ if(inc)inc.textContent='INCIDENTE · θᵢ = '+deg(theta);
+ if(ref)ref.textContent='RÉFLÉCHIE · θᵣ = '+deg(theta);
+ const ti=$('rayThetaI'),tr=$('rayThetaR'),tt=$('rayThetaOut');
+ if(ti)ti.textContent=s.angle===0?'0° · incidence normale':deg(theta)+' · oblique';
+ if(tr)tr.textContent=deg(theta);
+ if(tt)tt.textContent=deg(theta);
 }
+
 const c=x=>fmt(x.re,3)+(x.im<0?' − j':' + j')+fmt(Math.abs(x.im),3);$('gamma').textContent=c(result.Gamma);$('tau').textContent=c(result.tau);
 $('insight').innerHTML='<b>Lecture physique</b><p>'+(s.angle===0?'Incidence normale : les coefficients TE et TM sont identiques. ':'Incidence oblique : les admittances dépendent de la polarisation. ')+(s.por>0?'Les bulles diminuent la permittivité effective du béton. ':'Sans porosité, le mur est modélisé comme du béton plein. ')+(result.absorption>result.R?'Ici, la dissipation dans le mur domine la réflexion.':'Ici, la réflexion est supérieure à l’absorption.')+'</p>';
 $('sceneNote').textContent=({sphere:'SPHÈRES',prolate:'SPHÉROÏDES ALLONGÉS',oblate:'SPHÉROÏDES APLATIS',cube:'CUBES · GÉOMÉTRIE ILLUSTRATIVE'})[s.shape]+' · '+Math.round(s.por*100)+' %';
@@ -61,7 +78,7 @@ mat.color.set($('wallColor').value);wall.scale.z=Math.max(.3,s.thick/.09);wall.p
 updateRayDiagram();drawChart();updateUrl();
 }
 function drawChart(){const rows=sweepFrequency({fraction:s.por,frequencyMinHz:.5e9,frequencyMaxHz:6e9,thetaDeg:s.angle,polarization:s.pol,epsMatrix:matrixPermittivity(s.eps,s.loss),thicknessM:s.thick,shape:s.shape,aspectRatio:s.aspect,inclusionType:s.inclusionType,saturation:s.saturation,points:121});const canvas=$('chart'),ctx=canvas.getContext('2d'),w=canvas.clientWidth,h=220,dpr=Math.min(devicePixelRatio,2);canvas.width=w*dpr;canvas.height=h*dpr;ctx.scale(dpr,dpr);const L=34,R=10,T=12,B=24,pw=w-L-R,ph=h-T-B;ctx.clearRect(0,0,w,h);ctx.font='9px DM Mono';ctx.fillStyle='#8197ab';for(let i=0;i<=4;i++){const y=T+ph*i/4;ctx.strokeStyle='#263b4d';ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.fillText((100-i*25)+'%',2,y+3)}ctx.fillText('.5 GHz',L,h-5);ctx.fillText('6 GHz',w-48,h-5);for(const [key,color] of [['R','#ff806f'],['T','#50d6ad'],['A','#f3b85f']]){ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();rows.forEach((p,i)=>{const x=L+pw*i/(rows.length-1),y=T+ph*(1-p[key]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()}const ix=(s.f/1e9-.5)/5.5*pw;ctx.strokeStyle='#eaf3fa';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(L+ix,T);ctx.lineTo(L+ix,T+ph);ctx.stroke();ctx.setLineDash([])}
-let last=0;function animate(t){requestAnimationFrame(animate);const dt=Math.min(.05,(t-last)/1000||0);last=t;orbit.update();if(waveGroup?.visible){waveGroup.rotation.y+=dt*.12;waveGroup.children.forEach((g,i)=>{g.children.forEach((o,j)=>{o.material.opacity=.28+.42*(.5+.5*Math.sin(t*.0018+j*.7+i))})})}renderer.render(scene,camera)}requestAnimationFrame(animate);
+let last=0;function animate(t){requestAnimationFrame(animate);const dt=Math.min(.05,(t-last)/1000||0);last=t;orbit.update();if(waveGroup?.visible)updateWavefronts(t)renderer.render(scene,camera)}requestAnimationFrame(animate);
 function updateUrl(){const u=new URL(location.href);u.searchParams.set('f',(s.f/1e9).toFixed(2));u.searchParams.set('p',(s.por*100).toFixed(0));u.searchParams.set('a',String(s.angle));u.searchParams.set('pol',s.pol);u.searchParams.set('shape',s.shape);u.searchParams.set('aspect',String(s.shape==='sphere'||s.shape==='cube'?1:s.aspect));u.searchParams.set('type',s.inclusionType);u.searchParams.set('sat',String(Math.round(s.saturation*100)));history.replaceState({},'',u)}
 ['freq','angle','por','thick','radius','aspect','saturation'].forEach(id=>$(id).addEventListener('input',()=>{if(id==='por')document.querySelectorAll('[data-por]').forEach(b=>b.classList.toggle('selected',+b.dataset.por===+$('por').value));calculate();if(id==='radius'||id==='por'||id==='aspect')rebuildBubbles()}));
 ['eps','loss'].forEach(id=>$(id).addEventListener('change',calculate));
