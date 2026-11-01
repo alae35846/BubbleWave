@@ -10,7 +10,7 @@ renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setPixelR
 orbit=new OrbitControls(camera,renderer.domElement);orbit.enableDamping=true;orbit.target.set(0,0,0);orbit.minDistance=3;orbit.maxDistance=14;
 scene.add(new THREE.HemisphereLight(0xc6eaff,0x182638,2));const key=new THREE.DirectionalLight(0xffffff,3);key.position.set(3,5,5);scene.add(key);const rim=new THREE.PointLight(0x42cbe8,24,12);rim.position.set(-3,1,2);scene.add(rim);
 const grid=new THREE.GridHelper(12,24,0x29465c,0x1b3042);grid.position.y=-1.5;scene.add(grid);
-const mat=new THREE.MeshPhysicalMaterial({color:0x4e7893,metalness:.18,roughness:.38,transparent:true,opacity:.86,side:THREE.DoubleSide,clearcoat:.4});
+const mat=new THREE.MeshPhysicalMaterial({color:0x4e7893,metalness:.18,roughness:.38,transparent:true,opacity:.28,side:THREE.DoubleSide,clearcoat:.4});
 wall=new THREE.Mesh(new THREE.BoxGeometry(3,2.8,.65),mat);scene.add(wall);
 const edges=new THREE.LineSegments(new THREE.EdgesGeometry(wall.geometry),new THREE.LineBasicMaterial({color:0x8bd9e9,transparent:true,opacity:.5}));wall.add(edges);
 bubbleGroup=new THREE.Group();scene.add(bubbleGroup);
