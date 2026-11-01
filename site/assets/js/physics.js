@@ -152,14 +152,47 @@ export function spheroidDepolarization(shape="sphere",aspectRatio=1) {
  if(shape==="oblate"){const e=Math.sqrt(q*q-1);const parallel=((1+e*e)/e**3)*(e-Math.atan(e));return {parallel,perpendicular:(1-parallel)/2};}
  throw new RangeError(`Silhouette inconnue : ${shape}`);
 }
-/** Maxwell-Garnett sphéroïdal moyenné sur des orientations aléatoires. */
+/** Maxwell-Garnett sphéroïdal moyenné sur des orientations aléatoires.
+ * Le cube utilise volontairement l'approximation isotrope de Maxwell-Garnett
+ * (même polarizabilité dipolaire effective qu'une inclusion sphérique) :
+ * la géométrie cubique est visualisée, mais ses effets de forme exacts ne sont
+ * pas résolus. Ne pas interpréter ce cas comme un solveur cubique exact.
+ */
 export function maxwellGarnettSpheroid(epsMatrix,epsInclusion,fraction,shape="sphere",aspectRatio=1){
- if(shape==="sphere"||Math.abs(aspectRatio-1)<1e-8)return maxwellGarnett(epsMatrix,epsInclusion,fraction);
+ if(shape==="sphere"||shape==="cube"||Math.abs(aspectRatio-1)<1e-8)return maxwellGarnett(epsMatrix,epsInclusion,fraction);
  const phi=Math.min(.5,Math.max(0,fraction));if(phi===0)return {...epsMatrix};
  const L=spheroidDepolarization(shape,aspectRatio),delta=cx.sub(epsInclusion,epsMatrix);
  const axis=factor=>cx.add(epsMatrix,cx.div(cx.scale(cx.mul(epsMatrix,delta),phi),cx.add(epsMatrix,cx.scale(delta,(1-phi)*factor))));
  return cx.scale(cx.add(axis(L.parallel),cx.scale(axis(L.perpendicular),2)),1/3);
 }
+/**
+ * Permittivité des phases d'inclusion.
+ * Eau liquide : Debye simple à 25 °C (eps_s=78.36, eps_inf=5.2, tau=8.27 ps).
+ * Le signe imaginaire négatif suit la convention temporelle e^{+jωt}.
+ * Glace et granulat : valeurs constantes indicatives, à remplacer par des
+ * données mesurées si le matériau réel est connu.
+ */
+export function inclusionPermittivity(type, frequencyHz, saturation = 1) {
+  if (type === "water") {
+    const epsStatic = 78.36, epsInfinity = 5.2, tau = 8.27e-12;
+    const x = 2 * Math.PI * frequencyHz * tau;
+    const d = 1 + x * x;
+    return { re: epsInfinity + (epsStatic - epsInfinity) / d,
+      im: -(epsStatic - epsInfinity) * x / d };
+  }
+  if (type === "ice") return { re: 3.15, im: -0.003 };
+  if (type === "aggregate") return { re: 5.0, im: -0.10 };
+  return { re: 1, im: 0 }; // air
+}
+
+/** Pore partiellement saturé : mélange air/eau simplifié, puis MG dans le béton. */
+export function porePermittivity(type, frequencyHz, saturation = 1) {
+  if (type !== "water") return inclusionPermittivity(type, frequencyHz, saturation);
+  const water = inclusionPermittivity("water", frequencyHz);
+  const s = Math.min(1, Math.max(0, saturation));
+  return maxwellGarnett(ONE, water, s);
+}
+
 /**
  * Permittivité de la matrice du mur à partir de sa permittivité relative
  * réelle et de sa tangente de pertes : eps = eps' (1 - j tanδ).
@@ -458,11 +491,14 @@ export function sweepFrequency({
   points = 241,
   shape = "sphere",
   aspectRatio = 1,
+  inclusionType = null,
+  saturation = 1,
 }) {
-  const epsWall = maxwellGarnettSpheroid(epsMatrix, epsInclusion, fraction, shape, aspectRatio);
   const rows = [];
   for (let i = 0; i < points; i += 1) {
     const f = frequencyMinHz + ((frequencyMaxHz - frequencyMinHz) * i) / (points - 1);
+    const phase = inclusionType ? porePermittivity(inclusionType, f, saturation) : epsInclusion;
+    const epsWall = maxwellGarnettSpheroid(epsMatrix, phase, fraction, shape, aspectRatio);
     const s = computeSlab({
       frequencyHz: f,
       thetaDeg,
