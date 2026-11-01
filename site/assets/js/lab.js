@@ -26,13 +26,41 @@ for(const [id,v] of [['R',result.R],['T',result.T],['A',result.absorption]])$(id
 for(const [id,v] of [['barR',result.R],['barT',result.T],['barA',result.absorption]])$(id).style.width=Math.max(0,v*100)+'%';
 $('balance').textContent='R + T + A = '+fmt((result.R+result.T+result.absorption)*100,3)+' %';$('balanceState').textContent=Math.abs(result.R+result.T+result.absorption-1)<1e-9?'Conservation vérifiée':'Vérifier le bilan';
 $('epsEff').textContent=fmt(epsEff.re,3)+' − j'+fmt(Math.abs(epsEff.im),3);$('indexEff').textContent=fmt(result.nReal,3);$('lambdaWall').textContent=fmt(result.lambdaWall*100,2)+' cm';$('atten').textContent=fmt(result.attenuationDb,2)+' dB';
+function updateRayDiagram(){
+ const theta=s.angle*Math.PI/180;
+ const n=Math.max(1.001,Math.sqrt(Math.max(.01,epsEff.re)));
+ const theta2=Math.asin(Math.min(.999,Math.sin(theta)/n));
+ const deg=x=>fmt(x*180/Math.PI,1)+'°';
+ const x0=320,y0=105,xL=145,xR=620;
+ const rayLength=100;
+ const xIncident=x0-rayLength*Math.cos(theta), yIncident=y0+rayLength*Math.sin(theta);
+ const xReflected=x0-rayLength*Math.cos(theta), yReflected=y0-rayLength*Math.sin(theta);
+ const yInside=y0-Math.tan(theta2)*110;
+ const xTransmit=430+55*Math.cos(theta), yExit=yInside-55*Math.sin(theta);
+ const set=(id,d)=>{const el=$(id);if(el)el.setAttribute('d',d)};
+ set('incidentRay',`M${xIncident} ${yIncident}L${x0} ${y0}`);
+ set('reflectedRay',`M${x0} ${y0}L${xReflected} ${yReflected}`);
+ set('refractedRay',`M${x0} ${y0}L430 ${yInside}`);
+ set('transmittedRay',`M430 ${yInside}L${xTransmit} ${yExit}`);
+ const arc=(cx,cy,r,a,side=1)=>{const x1=cx-r*Math.cos(a),y1=cy+side*r*Math.sin(a),x2=cx-r,y2=cy;return `M${x2} ${y2}A${r} ${r} 0 0 0 ${x1} ${y1}`};
+ set('thetaIncidentArc',arc(x0,y0,40,theta,1));
+ set('thetaReflectedArc',arc(x0,y0,54,theta,-1));
+ set('thetaRefractedArc',arc(x0,y0,27,theta2,-1));
+ $('incidentLabel').textContent='INCIDENTE · θᵢ = '+deg(theta);
+ $('reflectedLabel').textContent='RÉFLÉCHIE · θᵣ = '+deg(theta);
+ $('refractedLabel').textContent='RÉFRACTÉE · θ₂ = '+deg(theta2);
+ $('rayThetaI').textContent=s.angle===0?'0° · incidence normale':deg(theta)+' · oblique';
+ $('rayThetaR').textContent=deg(theta);
+ $('rayTheta2').textContent=deg(theta2);
+ $('rayThetaOut').textContent=deg(theta);
+}
 const c=x=>fmt(x.re,3)+(x.im<0?' − j':' + j')+fmt(Math.abs(x.im),3);$('gamma').textContent=c(result.Gamma);$('tau').textContent=c(result.tau);
 $('insight').innerHTML='<b>Lecture physique</b><p>'+(s.angle===0?'Incidence normale : les coefficients TE et TM sont identiques. ':'Incidence oblique : les admittances dépendent de la polarisation. ')+(s.por>0?'Les bulles diminuent la permittivité effective du béton. ':'Sans porosité, le mur est modélisé comme du béton plein. ')+(result.absorption>result.R?'Ici, la dissipation dans le mur domine la réflexion.':'Ici, la réflexion est supérieure à l’absorption.')+'</p>';
 $('sceneNote').textContent=({sphere:'SPHÈRES',prolate:'SPHÉROÏDES ALLONGÉS',oblate:'SPHÉROÏDES APLATIS',cube:'CUBES · GÉOMÉTRIE ILLUSTRATIVE'})[s.shape]+' · '+Math.round(s.por*100)+' %';
 mat.color.set($('wallColor').value);wall.scale.z=Math.max(.3,s.thick/.09);wall.position.z=0;bubbleGroup.scale.z=Math.max(.3,s.thick/.09);bubbleGroup.visible=$('cutaway').checked;waveGroup.visible=$('wavefronts').checked;
-drawChart();updateUrl();
+updateRayDiagram();drawChart();updateUrl();
 }
-function drawChart(){const rows=sweepFrequency({fraction:s.por,frequencyMinHz:.5e9,frequencyMaxHz:6e9,thetaDeg:s.angle,polarization:s.pol,epsMatrix:matrixPermittivity(s.eps,s.loss),thicknessM:s.thick,shape:s.shape,aspectRatio:s.aspect,inclusionType:s.inclusionType,saturation:s.saturation,points:121});const canvas=$('chart'),ctx=canvas.getContext('2d'),w=canvas.clientWidth,h=170,dpr=Math.min(devicePixelRatio,2);canvas.width=w*dpr;canvas.height=h*dpr;ctx.scale(dpr,dpr);const L=34,R=10,T=12,B=24,pw=w-L-R,ph=h-T-B;ctx.clearRect(0,0,w,h);ctx.font='9px DM Mono';ctx.fillStyle='#8197ab';for(let i=0;i<=4;i++){const y=T+ph*i/4;ctx.strokeStyle='#263b4d';ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.fillText((100-i*25)+'%',2,y+3)}ctx.fillText('.5 GHz',L,h-5);ctx.fillText('6 GHz',w-48,h-5);for(const [key,color] of [['R','#ff806f'],['T','#50d6ad'],['A','#f3b85f']]){ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();rows.forEach((p,i)=>{const x=L+pw*i/(rows.length-1),y=T+ph*(1-p[key]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()}const ix=(s.f/1e9-.5)/5.5*pw;ctx.strokeStyle='#eaf3fa';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(L+ix,T);ctx.lineTo(L+ix,T+ph);ctx.stroke();ctx.setLineDash([])}
+function drawChart(){const rows=sweepFrequency({fraction:s.por,frequencyMinHz:.5e9,frequencyMaxHz:6e9,thetaDeg:s.angle,polarization:s.pol,epsMatrix:matrixPermittivity(s.eps,s.loss),thicknessM:s.thick,shape:s.shape,aspectRatio:s.aspect,inclusionType:s.inclusionType,saturation:s.saturation,points:121});const canvas=$('chart'),ctx=canvas.getContext('2d'),w=canvas.clientWidth,h=220,dpr=Math.min(devicePixelRatio,2);canvas.width=w*dpr;canvas.height=h*dpr;ctx.scale(dpr,dpr);const L=34,R=10,T=12,B=24,pw=w-L-R,ph=h-T-B;ctx.clearRect(0,0,w,h);ctx.font='9px DM Mono';ctx.fillStyle='#8197ab';for(let i=0;i<=4;i++){const y=T+ph*i/4;ctx.strokeStyle='#263b4d';ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.fillText((100-i*25)+'%',2,y+3)}ctx.fillText('.5 GHz',L,h-5);ctx.fillText('6 GHz',w-48,h-5);for(const [key,color] of [['R','#ff806f'],['T','#50d6ad'],['A','#f3b85f']]){ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();rows.forEach((p,i)=>{const x=L+pw*i/(rows.length-1),y=T+ph*(1-p[key]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()}const ix=(s.f/1e9-.5)/5.5*pw;ctx.strokeStyle='#eaf3fa';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(L+ix,T);ctx.lineTo(L+ix,T+ph);ctx.stroke();ctx.setLineDash([])}
 let last=0;function animate(t){requestAnimationFrame(animate);const dt=Math.min(.05,(t-last)/1000||0);last=t;orbit.update();if(waveGroup?.visible){waveGroup.rotation.y+=dt*.12;waveGroup.children.forEach((g,i)=>{g.children.forEach((o,j)=>{o.material.opacity=.28+.42*(.5+.5*Math.sin(t*.0018+j*.7+i))})})}renderer.render(scene,camera)}requestAnimationFrame(animate);
 function updateUrl(){const u=new URL(location.href);u.searchParams.set('f',(s.f/1e9).toFixed(2));u.searchParams.set('p',(s.por*100).toFixed(0));u.searchParams.set('a',String(s.angle));u.searchParams.set('pol',s.pol);u.searchParams.set('shape',s.shape);u.searchParams.set('aspect',String(s.shape==='sphere'||s.shape==='cube'?1:s.aspect));u.searchParams.set('type',s.inclusionType);u.searchParams.set('sat',String(Math.round(s.saturation*100)));history.replaceState({},'',u)}
 ['freq','angle','por','thick','radius','aspect','saturation'].forEach(id=>$(id).addEventListener('input',()=>{if(id==='por')document.querySelectorAll('[data-por]').forEach(b=>b.classList.toggle('selected',+b.dataset.por===+$('por').value));calculate();if(id==='radius'||id==='por'||id==='aspect')rebuildBubbles()}));
@@ -46,7 +74,10 @@ $('viewFront').onclick=()=>{camera.position.set(0,0,8);orbit.target.set(0,0,0);$
 $('fullscreen').onclick=()=>{const el=$('sceneWrap');if(!document.fullscreenElement)el.requestFullscreen?.();else document.exitFullscreen?.()};
 const settingsDrawer=$('settingsDrawer'),settingsToggle=$('toggleControls');
 function setSettingsOpen(open){document.body.classList.toggle('settings-open',open);settingsToggle.setAttribute('aria-expanded',String(open));settingsToggle.textContent=open?'✕ Fermer':'☰ Paramètres'}
-settingsToggle.addEventListener('click',()=>setSettingsOpen(!document.body.classList.contains('settings-open')));
+settingsToggle.addEventListener('click',()=>{
+ if(window.matchMedia('(max-width: 760px)').matches) setSettingsOpen(!document.body.classList.contains('settings-open'));
+ else settingsDrawer.scrollTo({top:0,behavior:'smooth'});
+});
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.body.classList.contains('settings-open'))setSettingsOpen(false)});
 setSettingsOpen(false);
 $('theme').onclick=()=>{document.body.classList.toggle('light');document.documentElement.dataset.theme=document.body.classList.contains('light')?'light':'dark'};
