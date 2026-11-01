@@ -10,6 +10,8 @@ import {
   maxwellGarnett,
   maxwellGarnettSpheroid,
   spheroidDepolarization,
+  inclusionPermittivity,
+  porePermittivity,
   sweepAngle,
   sweepDensity,
   sweepFrequency,
@@ -199,3 +201,28 @@ test("spheroïdes: limite sphérique",()=>{for(const shape of ["prolate","oblate
 test("facteurs de dépolarisation positifs et normalisés",()=>{for(const shape of ["prolate","oblate"]){const L=spheroidDepolarization(shape,2.5);assert.ok(L.parallel>0&&L.parallel<1&&L.perpendicular>0&&L.perpendicular<1);closeTo(L.parallel+2*L.perpendicular,1,1e-12,shape);}});
 test("silhouettes non sphériques changent epsilon effectif et énergie",()=>{const sphere=maxwellGarnettSpheroid(EPS_CONCRETE,EPS_AIR,.25,"sphere",1);for(const shape of ["prolate","oblate"]){const e=maxwellGarnettSpheroid(EPS_CONCRETE,EPS_AIR,.25,shape,2.5);assert.ok(Math.abs(e.re-sphere.re)>1e-5);const m=computeSlab({frequencyHz:FREQUENCY_HZ,thetaDeg:31,polarization:"TE",epsWall:e,thicknessM:THICKNESS_M});closeTo(m.R+m.T+m.absorption,1,1e-10,shape+" énergie");}});
 test("balayage fréquentiel dépend de la silhouette choisie",()=>{const common={fraction:.3,frequencyMinHz:.8e9,frequencyMaxHz:2e9,thetaDeg:20,polarization:"TM",epsMatrix:EPS_CONCRETE,thicknessM:THICKNESS_M,points:21};const a=sweepFrequency({...common,shape:"sphere"}),b=sweepFrequency({...common,shape:"prolate",aspectRatio:3});assert.ok(b.some((row,i)=>Math.abs(row.R-a[i].R)>1e-6));});
+
+test("les matériaux d'inclusion ont des permittivités passives",()=>{
+ const air=inclusionPermittivity("air",1e9),water=inclusionPermittivity("water",1e9),ice=inclusionPermittivity("ice",1e9),aggregate=inclusionPermittivity("aggregate",1e9);
+ assert.deepEqual(air,{re:1,im:0});
+ for(const eps of [water,ice,aggregate]){assert.ok(eps.re>1);assert.ok(eps.im<=0);assert.ok(Number.isFinite(eps.re)&&Number.isFinite(eps.im));}
+ assert.ok(water.re>ice.re&&water.im<0);
+});
+test("la permittivité de l'eau est dispersive et la saturation a les bonnes limites",()=>{
+ const low=inclusionPermittivity("water",.5e9),high=inclusionPermittivity("water",6e9);
+ assert.notEqual(low.re,high.re);assert.notEqual(low.im,high.im);
+ const dry=porePermittivity("water",1e9,0),wet=porePermittivity("water",1e9,1);
+ assert.deepEqual(dry,{re:1,im:0});assert.ok(wet.re>1&&wet.im<0);
+});
+test("le cube reste un modèle isotrope stable et conserve l'énergie",()=>{
+ const eps=maxwellGarnettSpheroid(EPS_CONCRETE,EPS_AIR,.2,"cube",1);
+ const sphere=maxwellGarnett(EPS_CONCRETE,EPS_AIR,.2);
+ closeTo(eps.re,sphere.re,1e-12,"approximation cubique réelle");
+ closeTo(eps.im,sphere.im,1e-12,"approximation cubique imaginaire");
+ const slab=computeSlab({frequencyHz:FREQUENCY_HZ,thetaDeg:25,polarization:"TE",epsWall:eps,thicknessM:THICKNESS_M});
+ closeTo(slab.R+slab.T+slab.absorption,1,1e-10,"bilan cubique");
+});
+test("balayage fréquentiel recalcule la dispersion de l'eau",()=>{
+ const rows=sweepFrequency({fraction:.2,frequencyMinHz:.5e9,frequencyMaxHz:6e9,thetaDeg:0,polarization:"TE",epsMatrix:EPS_CONCRETE,thicknessM:THICKNESS_M,inclusionType:"water",saturation:1,points:9});
+ assert.ok(rows.some((row,i)=>i>0&&Math.abs(row.R-rows[0].R)>1e-7));
+});
