@@ -416,11 +416,13 @@ export function sweepDensity({
   thicknessM,
   maxFraction = 0.5,
   points = 121,
+  shape = "sphere",
+  aspectRatio = 1,
 }) {
   const rows = [];
   for (let i = 0; i < points; i += 1) {
     const phi = (maxFraction * i) / (points - 1);
-    const epsWall = maxwellGarnett(epsMatrix, epsInclusion, phi);
+    const epsWall = maxwellGarnettSpheroid(epsMatrix, epsInclusion, phi, shape, aspectRatio);
     const s = computeSlab({
       frequencyHz,
       thetaDeg,
@@ -483,8 +485,10 @@ export function sweepAngle({
   epsInclusion = ONE,
   thicknessM,
   points = 181,
+  shape = "sphere",
+  aspectRatio = 1,
 }) {
-  const epsWall = maxwellGarnett(epsMatrix, epsInclusion, fraction);
+  const epsWall = maxwellGarnettSpheroid(epsMatrix, epsInclusion, fraction, shape, aspectRatio);
   const rows = [];
   for (let i = 0; i < points; i += 1) {
     const theta = thetaMinDeg + ((thetaMaxDeg - thetaMinDeg) * i) / (points - 1);
@@ -512,8 +516,10 @@ export function brewsterAngle({
   thicknessM,
   thetaMaxDeg = 89,
   points = 890,
+  shape = "sphere",
+  aspectRatio = 1,
 }) {
-  const epsWall = maxwellGarnett(epsMatrix, epsInclusion, fraction);
+  const epsWall = maxwellGarnettSpheroid(epsMatrix, epsInclusion, fraction, shape, aspectRatio);
   let best = { thetaDeg: 0, R: Infinity, T: 0, A: 0 };
   for (let i = 0; i <= points; i += 1) {
     const theta = (thetaMaxDeg * i) / points;
