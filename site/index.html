@@ -11,10 +11,10 @@
 <header class="topbar">
  <a class="brand" href="./"><img src="assets/img/logo.svg" alt=""><span>Bubble<span class="accent">Wave</span></span></a>
  <div class="topmeta"><i class="live-dot"></i> LABORATOIRE DE SIMULATION <span class="sep">/</span> MODÈLE EFFECTIF</div>
- <div class="top-actions"><button id="reset" class="ghost">↺ Réinitialiser</button><button id="theme" class="icon" aria-label="Changer le thème">◐</button></div>
+ <div class="top-actions"><button id="toggleControls" class="ghost" aria-expanded="true" aria-controls="settingsDrawer">☰ Paramètres</button><button id="reset" class="ghost">↺ Réinitialiser</button><button id="theme" class="icon" aria-label="Changer le thème">◐</button></div>
 </header>
 <main class="workspace">
- <aside class="panel controls">
+ <aside class="panel controls" id="settingsDrawer">
   <div class="panel-head"><div><span class="eyebrow">01 / CONFIGURATION</span><h1>Paramètres</h1></div><span class="status">EN DIRECT</span></div>
   <section class="control-group"><div class="group-title">Onde incidente <span>01</span></div>
    <label class="control"><span>Fréquence <output id="freqOut">1,00 GHz</output></span><input id="freq" type="range" min=".5" max="6" step=".05" value="1"><small>0,5 à 6 GHz · longueur d’onde dans l’air</small></label>
@@ -63,5 +63,6 @@
  </aside>
 </main>
 <footer><span>BUBBLEWAVE · LABORATOIRE ÉLECTROMAGNÉTIQUE</span><span>Maxwell–Garnett + matrice de transfert · modèle homogène isotrope</span></footer>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <script type="module" src="assets/js/lab.js"></script>
 </body></html>
