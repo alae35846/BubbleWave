@@ -42,10 +42,10 @@ function updateRayDiagram(){
  set('reflectedRay',`M${x0} ${y0}L${xReflected} ${yReflected}`);
  set('refractedRay',`M${x0} ${y0}L430 ${yInside}`);
  set('transmittedRay',`M430 ${yInside}L${xTransmit} ${yExit}`);
- const arc=(cx,cy,r,a)=>{const x1=cx-r*Math.cos(a),y1=cy+r*Math.sin(a),x2=cx-r,y2=cy;return `M${x2} ${y2}A${r} ${r} 0 0 0 ${x1} ${y1}`};
- set('thetaIncidentArc',arc(x0,y0,40,theta));
- set('thetaReflectedArc',arc(x0,y0,54,theta));
- set('thetaRefractedArc',arc(x0,y0,27,theta2));
+ const arc=(cx,cy,r,a,side=1)=>{const x1=cx-r*Math.cos(a),y1=cy+side*r*Math.sin(a),x2=cx-r,y2=cy;return `M${x2} ${y2}A${r} ${r} 0 0 0 ${x1} ${y1}`};
+ set('thetaIncidentArc',arc(x0,y0,40,theta,1));
+ set('thetaReflectedArc',arc(x0,y0,54,theta,-1));
+ set('thetaRefractedArc',arc(x0,y0,27,theta2,-1));
  $('incidentLabel').textContent='INCIDENTE · θᵢ = '+deg(theta);
  $('reflectedLabel').textContent='RÉFLÉCHIE · θᵣ = '+deg(theta);
  $('refractedLabel').textContent='RÉFRACTÉE · θ₂ = '+deg(theta2);
