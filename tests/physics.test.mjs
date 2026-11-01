@@ -8,6 +8,8 @@ import {
   electricFieldProfile,
   matrixPermittivity,
   maxwellGarnett,
+  maxwellGarnettSpheroid,
+  spheroidDepolarization,
   sweepAngle,
   sweepDensity,
   sweepFrequency,
@@ -192,3 +194,8 @@ test("validateModel réussit tous ses contrôles numériques", () => {
   assert.ok(validation.maxEnergyError < 1e-10);
   assert.ok(validation.maxAiryError < 1e-10);
 });
+
+test("spheroïdes: limite sphérique",()=>{for(const shape of ["prolate","oblate"]){const a=maxwellGarnettSpheroid(EPS_CONCRETE,EPS_AIR,.2,shape,1),b=maxwellGarnett(EPS_CONCRETE,EPS_AIR,.2);closeTo(a.re,b.re,1e-12,shape+" réel");closeTo(a.im,b.im,1e-12,shape+" imaginaire");}});
+test("facteurs de dépolarisation positifs et normalisés",()=>{for(const shape of ["prolate","oblate"]){const L=spheroidDepolarization(shape,2.5);assert.ok(L.parallel>0&&L.parallel<1&&L.perpendicular>0&&L.perpendicular<1);closeTo(L.parallel+2*L.perpendicular,1,1e-12,shape);}});
+test("silhouettes non sphériques changent epsilon effectif et énergie",()=>{const sphere=maxwellGarnettSpheroid(EPS_CONCRETE,EPS_AIR,.25,"sphere",1);for(const shape of ["prolate","oblate"]){const e=maxwellGarnettSpheroid(EPS_CONCRETE,EPS_AIR,.25,shape,2.5);assert.ok(Math.abs(e.re-sphere.re)>1e-5);const m=computeSlab({frequencyHz:FREQUENCY_HZ,thetaDeg:31,polarization:"TE",epsWall:e,thicknessM:THICKNESS_M});closeTo(m.R+m.T+m.absorption,1,1e-10,shape+" énergie");}});
+test("balayage fréquentiel dépend de la silhouette choisie",()=>{const common={fraction:.3,frequencyMinHz:.8e9,frequencyMaxHz:2e9,thetaDeg:20,polarization:"TM",epsMatrix:EPS_CONCRETE,thicknessM:THICKNESS_M,points:21};const a=sweepFrequency({...common,shape:"sphere"}),b=sweepFrequency({...common,shape:"prolate",aspectRatio:3});assert.ok(b.some((row,i)=>Math.abs(row.R-a[i].R)>1e-6));});
