@@ -10,7 +10,7 @@
 <body>
 <header class="topbar">
  <a class="brand" href="./"><img src="assets/img/logo.svg" alt=""><span>Bubble<span class="accent">Wave</span></span></a>
- <div class="topmeta"><i class="live-dot"></i> LABORATOIRE DE SIMULATION <span class="sep">/</span> MODÈLE EFFECTIF <span class="sep">·</span> <span class="author-credit">MADE BY DOUAEL ELLA</span></div>
+ <div class="topmeta"><i class="live-dot"></i> LABORATOIRE DE SIMULATION <span class="sep">/</span> MODÈLE EFFECTIF <span class="sep">·</span> <span class="author-credit">MADE BY TOUIL ALAE</span></div>
  <div class="top-actions"><button id="toggleControls" class="ghost" aria-expanded="true" aria-controls="settingsDrawer">☰ Paramètres</button><button id="reset" class="ghost">↺ Réinitialiser</button><button id="theme" class="icon" aria-label="Changer le thème">◐</button></div>
 </header>
 <main class="workspace">
@@ -43,22 +43,17 @@
  <section class="center-column">
   <div class="scene-head"><div><span class="eyebrow">02 / VISUALISATION SPATIALE</span><h2>Mur de béton à inclusions</h2><p>Glisser pour orbiter · molette pour zoomer · clic droit pour déplacer</p></div><div class="scene-tools"><button id="viewFront" class="tool active">Face</button><button id="viewIso" class="tool">3D</button><button id="fullscreen" class="tool">⛶</button></div></div>
   <div class="scene-wrap" id="sceneWrap"><div id="scene" aria-label="Scène 3D interactive du mur poreux"></div><div class="scene-legend"><span><i class="legend-dot incident"></i> Incidente</span><span><i class="legend-dot reflected"></i> Réfléchie</span><span><i class="legend-dot transmitted"></i> Transmise</span></div><div class="scene-note" id="sceneNote">SPHÈRES · DISTRIBUTION ILLUSTRATIVE</div><div class="scene-axis">x <b>→</b> &nbsp; y <b>↑</b> &nbsp; z <b>↗</b></div></div>
-  <section class="propagation-schematic" aria-label="Schéma géométrique des rayons incidents, réfléchis et transmis">
-   <div class="schematic-title"><b>Trajet des ondes et mesure des angles</b><span>Angles mesurés depuis la normale à la paroi</span></div>
-   <svg id="rayDiagram" class="ray-diagram" viewBox="0 0 760 230" role="img" aria-label="Rayon incident en cyan, rayon réfléchi en corail, rayon réfracté dans le mur en ambre et rayon transmis en vert">
-    <defs><marker id="arrowIncident" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6" fill="none" stroke="#63d8ed" stroke-width="1.4"/></marker><marker id="arrowReflected" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6" fill="none" stroke="#ff806f" stroke-width="1.4"/></marker><marker id="arrowRefracted" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6" fill="none" stroke="#f3b85f" stroke-width="1.4"/></marker><marker id="arrowTransmitted" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6" fill="none" stroke="#50d6ad" stroke-width="1.4"/></marker></defs>
-    <rect x="320" y="18" width="110" height="194" rx="5" class="ray-wall"/><path d="M340 18V212 M365 18V212 M390 18V212 M415 18V212" class="ray-wall-lines"/>
-    <text x="375" y="204" text-anchor="middle" class="ray-wall-label">BÉTON</text>
-    <path d="M320 105H155 M430 105H620" class="ray-normal"/><text x="236" y="96" class="ray-small">Normale</text>
-    <path id="incidentRay" class="ray incident-ray" marker-end="url(#arrowIncident)" d="M145 105L320 105"/><path id="reflectedRay" class="ray reflected-ray" marker-end="url(#arrowReflected)" d="M320 105L145 105"/><path id="refractedRay" class="ray refracted-ray" marker-end="url(#arrowRefracted)" d="M320 105L430 105"/><path id="transmittedRay" class="ray transmitted-ray" marker-end="url(#arrowTransmitted)" d="M430 105L620 105"/>
-    <path id="thetaIncidentArc" class="ray-angle incident-angle" d="M275 105A45 45 0 0 0 275 105"/><path id="thetaReflectedArc" class="ray-angle reflected-angle" d="M365 105A45 45 0 0 0 365 105"/><path id="thetaRefractedArc" class="ray-angle refracted-angle" d="M365 105A45 45 0 0 0 365 105"/>
-    <circle cx="320" cy="105" r="4" class="ray-hit"/><circle cx="430" cy="105" r="4" class="ray-hit"/>
-    <text id="incidentLabel" x="145" y="38" class="ray-label incident-label">INCIDENTE · θᵢ = 0°</text><text id="reflectedLabel" x="145" y="185" class="ray-label reflected-label">RÉFLÉCHIE · θᵣ = 0°</text><text id="refractedLabel" x="375" y="48" text-anchor="middle" class="ray-label refracted-label">RÉFRACTÉE · θ₂ = 0°</text><text x="535" y="38" class="ray-label transmitted-label">TRANSMISE</text>
-    <text x="375" y="224" text-anchor="middle" class="ray-small">Mur diélectrique · schéma géométrique non à l’échelle</text>
-   </svg>
-   <div class="ray-angle-readout"><span>Incidence <b id="rayThetaI">0° · normale</b></span><span>Réflexion <b id="rayThetaR">0°</b></span><span>Réfraction dans le mur <b id="rayTheta2">0°</b></span><span>Transmission <b id="rayThetaOut">0°</b></span></div>
-   <p>La réflexion conserve l’angle par rapport à la normale. La réfraction suit la loi de Snell-Descartes ; pour une dalle à faces parallèles, le rayon émergent retrouve la direction du rayon incident.</p>
-  </section><div class="scene-foot"><span><b id="sceneFreq">1,00 GHz</b> fréquence</span><span><b id="sceneAngle">0°</b> incidence</span><span><b id="scenePol">TE</b> polarisation</span><span><b id="sceneLambda">30,0 cm</b> λ₀ dans l’air</span></div>
+  <section class="propagation-schematic" aria-label="Propagation des ondes incidente, réfléchie et transmise">
+   <div class="schematic-title"><b>Propagation des ondes électromagnétiques</b><span>Avant le mur · dans le béton · après le mur</span></div>
+   <div class="wave-path">
+    <div class="wave-zone"><span>ONDE INCIDENTE</span><i class="wave-lines incident-lines">))))))</i><small>Vers le mur</small></div>
+    <div class="wave-wall"><b>MUR DE BÉTON</b><span>Milieu poreux</span></div>
+    <div class="wave-zone"><span>ONDE TRANSMISE</span><i class="wave-lines transmitted-lines">))))))</i><small>Après traversée</small></div>
+    <div class="wave-reflection"><b>ONDE RÉFLÉCHIE</b><span>Retour vers le milieu incident</span></div>
+   </div>
+   <p>Les fronts d’onde animés sont représentés avant la paroi, à l’intérieur du béton et après la paroi. Le schéma est illustratif ; les coefficients R et T sont calculés par le modèle électromagnétique.</p>
+  </section>
+  <div class="scene-foot"><span><b id="sceneFreq">1,00 GHz</b> fréquence</span><span><b id="sceneAngle">0°</b> incidence</span><span><b id="scenePol">TE</b> polarisation</span><span><b id="sceneLambda">30,0 cm</b> λ₀ dans l’air</span></div>
   <div class="chart-panel"><div class="chart-title"><div><span class="eyebrow">03 / RÉPONSE DU SYSTÈME</span><h3>Coefficients énergétiques</h3></div><div class="chart-legend"><span><i class="r"></i>R · Réflexion</span><span><i class="t"></i>T · Transmission</span><span><i class="a"></i>A · Absorption</span></div></div><canvas id="chart" height="170"></canvas><div class="chart-caption">Balayage fréquentiel · les marqueurs indiquent le point de fonctionnement actuel.</div></div>
  </section>
  <aside class="panel results">
@@ -77,7 +72,7 @@
   <button id="export" class="export">↓ Exporter les résultats CSV</button>
  </aside>
 </main>
-<footer><span>BUBBLEWAVE · LABORATOIRE ÉLECTROMAGNÉTIQUE</span><span>Made by Douael Ella · Maxwell–Garnett + matrice de transfert</span></footer>
+<footer><span>BUBBLEWAVE · LABORATOIRE ÉLECTROMAGNÉTIQUE</span><span>Made by Touil Alae · Maxwell–Garnett + matrice de transfert</span></footer>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <script type="module" src="assets/js/lab.js"></script>
 </body></html>
