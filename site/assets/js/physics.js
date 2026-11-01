@@ -142,6 +142,25 @@ export function maxwellGarnett(epsMatrix, epsInclusion, f) {
 }
 
 /**
+ * Facteurs de dépolarisation d'un sphéroïde. q>=1 :
+ * prolate: q = longueur/diamètre ; oblate: q = diamètre/épaisseur.
+ */
+export function spheroidDepolarization(shape="sphere",aspectRatio=1) {
+ const q=Math.max(1,Number(aspectRatio)||1);
+ if(shape==="sphere"||Math.abs(q-1)<1e-8)return {parallel:1/3,perpendicular:1/3};
+ if(shape==="prolate"){const e=Math.sqrt(1-1/(q*q));const parallel=(1-e*e)/(2*e**3)*(Math.log((1+e)/(1-e))-2*e);return {parallel,perpendicular:(1-parallel)/2};}
+ if(shape==="oblate"){const e=Math.sqrt(q*q-1);const parallel=((1+e*e)/e**3)*(e-Math.atan(e));return {parallel,perpendicular:(1-parallel)/2};}
+ throw new RangeError(`Silhouette inconnue : ${shape}`);
+}
+/** Maxwell-Garnett sphéroïdal moyenné sur des orientations aléatoires. */
+export function maxwellGarnettSpheroid(epsMatrix,epsInclusion,fraction,shape="sphere",aspectRatio=1){
+ if(shape==="sphere"||Math.abs(aspectRatio-1)<1e-8)return maxwellGarnett(epsMatrix,epsInclusion,fraction);
+ const phi=Math.min(.5,Math.max(0,fraction));if(phi===0)return {...epsMatrix};
+ const L=spheroidDepolarization(shape,aspectRatio),delta=cx.sub(epsInclusion,epsMatrix);
+ const axis=factor=>cx.add(epsMatrix,cx.div(cx.scale(cx.mul(epsMatrix,delta),phi),cx.add(epsMatrix,cx.scale(delta,(1-phi)*factor))));
+ return cx.scale(cx.add(axis(L.parallel),cx.scale(axis(L.perpendicular),2)),1/3);
+}
+/**
  * Permittivité de la matrice du mur à partir de sa permittivité relative
  * réelle et de sa tangente de pertes : eps = eps' (1 - j tanδ).
  */
@@ -397,11 +416,13 @@ export function sweepDensity({
   thicknessM,
   maxFraction = 0.5,
   points = 121,
+  shape = "sphere",
+  aspectRatio = 1,
 }) {
   const rows = [];
   for (let i = 0; i < points; i += 1) {
     const phi = (maxFraction * i) / (points - 1);
-    const epsWall = maxwellGarnett(epsMatrix, epsInclusion, phi);
+    const epsWall = maxwellGarnettSpheroid(epsMatrix, epsInclusion, phi, shape, aspectRatio);
     const s = computeSlab({
       frequencyHz,
       thetaDeg,
@@ -435,8 +456,10 @@ export function sweepFrequency({
   epsInclusion = ONE,
   thicknessM,
   points = 241,
+  shape = "sphere",
+  aspectRatio = 1,
 }) {
-  const epsWall = maxwellGarnett(epsMatrix, epsInclusion, fraction);
+  const epsWall = maxwellGarnettSpheroid(epsMatrix, epsInclusion, fraction, shape, aspectRatio);
   const rows = [];
   for (let i = 0; i < points; i += 1) {
     const f = frequencyMinHz + ((frequencyMaxHz - frequencyMinHz) * i) / (points - 1);
@@ -462,8 +485,10 @@ export function sweepAngle({
   epsInclusion = ONE,
   thicknessM,
   points = 181,
+  shape = "sphere",
+  aspectRatio = 1,
 }) {
-  const epsWall = maxwellGarnett(epsMatrix, epsInclusion, fraction);
+  const epsWall = maxwellGarnettSpheroid(epsMatrix, epsInclusion, fraction, shape, aspectRatio);
   const rows = [];
   for (let i = 0; i < points; i += 1) {
     const theta = thetaMinDeg + ((thetaMaxDeg - thetaMinDeg) * i) / (points - 1);
@@ -491,8 +516,10 @@ export function brewsterAngle({
   thicknessM,
   thetaMaxDeg = 89,
   points = 890,
+  shape = "sphere",
+  aspectRatio = 1,
 }) {
-  const epsWall = maxwellGarnett(epsMatrix, epsInclusion, fraction);
+  const epsWall = maxwellGarnettSpheroid(epsMatrix, epsInclusion, fraction, shape, aspectRatio);
   let best = { thetaDeg: 0, R: Infinity, T: 0, A: 0 };
   for (let i = 0; i <= points; i += 1) {
     const theta = (thetaMaxDeg * i) / points;
