@@ -87,7 +87,7 @@ function renderLayerList(){
  </div>`).join('');
 }
 function layerPermittivity(material){
- if(material==='air')return {re:1,im:0};if(material==='water')return porePermittivity('water',s.f,1);
+ if(material==='air')return {re:1,im:0};if(material==='water')return inclusionPermittivity('water',s.f);
  if(material==='ice')return {re:3.15,im:-.003};if(material==='aggregate')return {re:5,im:-.1};
  if(material==='insulation')return {re:2.5,im:-.025};return epsEff;
 }
