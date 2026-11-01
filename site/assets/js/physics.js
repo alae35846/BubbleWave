@@ -545,7 +545,7 @@ export function sweepFrequency({
     const f = frequencyMinHz + ((frequencyMaxHz - frequencyMinHz) * i) / (points - 1);
     const phase = inclusionType ? porePermittivity(inclusionType, f, saturation) : epsInclusion;
     const epsWall = maxwellGarnettSpheroid(epsMatrix, phase, fraction, shape, aspectRatio);
-    const stack=layers?.map(l=>({name:l.name,thicknessM:l.thicknessM,eps:l.material==='concrete'?maxwellGarnettSpheroid(epsMatrix,phase,fraction,l.shape||shape,l.aspectRatio||aspectRatio):l.eps}))||null;
+    const stack=layers?.map(l=>({name:l.name,thicknessM:l.thicknessM,eps:l.material==='concrete'?maxwellGarnettSpheroid(epsMatrix,phase,fraction,l.shape||shape,l.aspectRatio||aspectRatio):l.material==='water'?inclusionPermittivity('water',f):l.eps}))||null;
     const s = stack ? computeMultilayer({frequencyHz:f,thetaDeg,polarization,layers:stack}) : computeSlab({frequencyHz:f,thetaDeg,polarization,epsWall,thicknessM});
     rows.push({ x: f / 1e9, R: s.R, T: s.T, A: s.absorption });
   }
