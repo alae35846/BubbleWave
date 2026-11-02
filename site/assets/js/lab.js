@@ -58,17 +58,20 @@ function updateRayDiagram(){
  const y=105,x0=320;
  const xIncident=x0-105*Math.cos(theta),yIncident=y+105*Math.sin(theta);
  const xReflected=x0-105*Math.cos(theta),yReflected=y-105*Math.sin(theta);
+ const n2=Math.max(1.001,result.nReal||1.001);
+ const thetaT=Math.asin(Math.min(1,Math.sin(theta)/n2));
+ const xTransmitted=430+190*Math.cos(thetaT),yTransmitted=y-190*Math.sin(thetaT);
  const set=(id,d)=>{const el=$(id);if(el)el.setAttribute('d',d)};
  set('incidentRay',`M${xIncident} ${yIncident}L${x0} ${y}`);
  set('reflectedRay',`M${x0} ${y}L${xReflected} ${yReflected}`);
- set('transmittedRay',`M430 ${y}L620 ${y}`);
+ set('transmittedRay',`M430 ${y}L${xTransmitted} ${yTransmitted}`);
  const inc=$('incidentLabel'),ref=$('reflectedLabel');
  if(inc)inc.textContent='INCIDENTE · θᵢ = '+deg(theta);
  if(ref)ref.textContent='RÉFLÉCHIE · θᵣ = '+deg(theta);
  const ti=$('rayThetaI'),tr=$('rayThetaR'),tt=$('rayThetaOut');
  if(ti)ti.textContent=s.angle===0?'0° · incidence normale':deg(theta)+' · oblique';
  if(tr)tr.textContent=deg(theta);
- if(tt)tt.textContent=deg(theta);
+ if(tt)tt.textContent=deg(thetaT)+' · réfraction';
 }
 
 const c=x=>fmt(x.re,3)+(x.im<0?' − j':' + j')+fmt(Math.abs(x.im),3);$('gamma').textContent=c(result.Gamma);$('tau').textContent=c(result.tau);
