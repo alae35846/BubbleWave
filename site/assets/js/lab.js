@@ -27,19 +27,20 @@ function rebuildLayerMarkers(){
 function rebuildBubbles(){bubbleGroup.clear();const rand=seed(),count=Math.round(12+s.por*95),radius=.045+s.radius*.014;for(let i=0;i<count;i++){const r=radius*(.55+rand()*.9),geometry=s.shape==='cube'?new THREE.BoxGeometry(r*1.65,r*1.65,r*1.65):new THREE.SphereGeometry(r,22,16),m=new THREE.Mesh(geometry,new THREE.MeshPhysicalMaterial({color:$('bubbleColor').value,metalness:.05,roughness:.12,transparent:true,opacity:.72,transmission:.28,thickness:.12,clearcoat:1}));if(s.shape==='prolate')m.scale.set(1,1,s.aspect);else if(s.shape==='oblate')m.scale.set(1,1,1/s.aspect);m.rotation.set(rand()*Math.PI,rand()*Math.PI,rand()*Math.PI);m.position.set((rand()-.5)*2.8,(rand()-.5)*2.55,(rand()-.5)*.57);bubbleGroup.add(m)}}
 
 const waveLines={incident:null,reflected:null,transmitted:null,inside:null};
-function makeWaveLine(color){const geo=new THREE.BufferGeometry(),pts=Array.from({length:100},()=>new THREE.Vector3());geo.setFromPoints(pts);const line=new THREE.Line(geo,new THREE.LineBasicMaterial({color,transparent:true,opacity:.95}));line.frustumCulled=false;return line}
+function makeWaveLine(color){const geo=new THREE.BufferGeometry(),pts=Array.from({length:120},()=>new THREE.Vector3());geo.setFromPoints(pts);const line=new THREE.Line(geo,new THREE.LineBasicMaterial({color,transparent:true,opacity:1,linewidth:3}));line.frustumCulled=false;return line}
 function rebuildWaves(){
  waveGroup?.removeFromParent();waveGroup=new THREE.Group();scene.add(waveGroup);
- for(const [key,color] of [['incident',0x63d8ed],['reflected',0xff806f],['transmitted',0x50d6ad],['inside',0xf3b85f]]){waveLines[key]=makeWaveLine(color);waveGroup.add(waveLines[key])}
+ for(const [key,color] of [['incident',0x63eaff],['reflected',0xff7568],['transmitted',0x39ffc0],['inside',0xffc247]]){waveLines[key]=makeWaveLine(color);waveGroup.add(waveLines[key])}
  updateWavefronts(0);
 }
 function updateWavefronts(t){
- const phase=t*.0025,amp=.22;
- const draw=(line,z0,z1,dir,offset)=>{const a=line.geometry.attributes.position;for(let i=0;i<a.count;i++){const u=i/(a.count-1),z=z0+(z1-z0)*u+dir*phase*.55+offset;a.setXYZ(i,0,amp*Math.sin(u*Math.PI*5-phase*dir),z)}a.needsUpdate=true;line.geometry.computeBoundingSphere()};
- draw(waveLines.incident,3.1,1.0,-1,0);
- draw(waveLines.reflected,.85,3.0,1,0);
- draw(waveLines.inside,.32,-.32,-1,0);
- draw(waveLines.transmitted,-.85,-3.0,-1,0);
+ const phase=t*.00055,amp=.16;
+ const draw=(line,z,phaseOffset=0)=>{const a=line.geometry.attributes.position;for(let i=0;i<a.count;i++){const u=i/(a.count-1),x=-1.35+2.7*u,y=amp*Math.sin(u*Math.PI*4-phase*2+phaseOffset);a.setXYZ(i,x,y,z)}a.needsUpdate=true;line.geometry.computeBoundingSphere()};
+ const travel=(start,span)=>((phase*1.15)%span)+start;
+ draw(waveLines.incident,2.55-(phase*1.15%2.15));
+ draw(waveLines.reflected,.42+(phase*1.15%2.15),Math.PI*.35);
+ draw(waveLines.inside,.30-(phase*.48%0.60),Math.PI*.7);
+ draw(waveLines.transmitted,-.42-(phase*1.15%2.15),Math.PI);
 }
 rebuildBubbles();rebuildWaves();
 function resize(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}new ResizeObserver(resize).observe(host);resize();
