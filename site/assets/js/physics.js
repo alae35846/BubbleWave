@@ -410,6 +410,51 @@ export function computeSlab({
   };
 }
 
+
+/**
+ * Empilement de couches diélectriques planes, avec incidence oblique TE/TM.
+ * Les matrices caractéristiques sont multipliées dans l'ordre source -> sortie.
+ * Chaque couche est {eps:{re,im}, thicknessM:number, name?:string}.
+ */
+export function computeMultilayer({frequencyHz,thetaDeg,polarization="TE",layers,epsOuter=ONE}) {
+  if (!Array.isArray(layers) || layers.length < 1) throw new RangeError("Le mur doit contenir au moins une couche.");
+  const f=Math.max(1,frequencyHz), k0=2*Math.PI*f/C0, theta=degToRad(thetaDeg);
+  const n0=cSqrtPassive(epsOuter), kx=cx.scale(n0,k0*Math.sin(theta));
+  const kz0=cSqrtPassive(cx.sub(cx.scale(cx.mul(n0,n0),k0*k0),cx.mul(kx,kx)));
+  const isTM=polarization==="TM";
+  const y0=isTM?cx.div(cx.scale(cx.mul(n0,n0),k0),kz0):cx.div(kz0,cx.of(k0));
+  let M={A:ONE,B:ZERO,C:ZERO,D:ONE};
+  const layerData=[];
+  for(const layer of layers){
+    const eps=layer.eps, d=Math.max(1e-5,Number(layer.thicknessM)||0);
+    const n=cSqrtPassive(eps);
+    const kz=cSqrtPassive(cx.sub(cx.scale(cx.mul(n,n),k0*k0),cx.mul(kx,kx)));
+    const y=isTM?cx.div(cx.scale(cx.mul(n,n),k0),kz):cx.div(kz,cx.of(k0));
+    const delta=cx.scale(kz,d), co=cx.cos(delta), si=cx.sin(delta);
+    const L={A:co,B:cx.mul(I,cx.div(si,y)),C:cx.mul(I,cx.mul(y,si)),D:co};
+    M={A:cx.add(cx.mul(M.A,L.A),cx.mul(M.B,L.C)),
+       B:cx.add(cx.mul(M.A,L.B),cx.mul(M.B,L.D)),
+       C:cx.add(cx.mul(M.C,L.A),cx.mul(M.D,L.C)),
+       D:cx.add(cx.mul(M.C,L.B),cx.mul(M.D,L.D))};
+    layerData.push({name:layer.name||"Couche",eps,thicknessM:d,n,kz,y});
+  }
+  const yIn=cx.div(cx.add(M.C,cx.mul(M.D,y0)),cx.add(M.A,cx.mul(M.B,y0)));
+  const Gamma=cx.div(cx.sub(y0,yIn),cx.add(y0,yIn));
+  const tau=cx.div(cx.add(ONE,Gamma),cx.add(M.A,cx.mul(M.B,y0)));
+  const R=clamp01(cx.abs2(Gamma)), T=Math.max(0,cx.abs2(tau)), absorption=1-R-T;
+  const totalThickness=layerData.reduce((sum,l)=>sum+l.thicknessM,0);
+  const first=layerData[0], nReal=Math.max(first.n.re,1e-9), lambdaWall=(C0/f)/nReal;
+  const attenuationDb=layerData.reduce((sum,l)=>sum+8.685889638*Math.max(0,-l.kz.im)*l.thicknessM,0);
+  return {frequencyHz:f,thetaDeg,polarization,layers:layerData,totalThickness,
+    Gamma,tau,R,T,absorption,A:M.A,B:M.B,C:M.C,D:M.D,yIn,yOut:y0,
+    epsWall:first.eps,nWall:first.n,kzWall:first.kz,nReal,lambdaWall,
+    attenuationDb,lambda0:C0/f,alphaWall:Math.max(0,-first.kz.im),
+    betaWall:Math.max(0,first.kz.re),thetaWallDeg:radToDeg(Math.atan2(kx.re,Math.max(first.kz.re,1e-12))),
+    gammaWall:{re:Math.max(0,-first.kz.im),im:Math.max(0,first.kz.re)},
+    standingWaveRatio:cx.abs(Gamma),vswr:cx.abs(Gamma)>=1?Infinity:(1+cx.abs(Gamma))/(1-cx.abs(Gamma)),
+    reflectionPhaseDeg:radToDeg(cx.arg(Gamma)),transmissionPhaseDeg:radToDeg(cx.arg(tau))};
+}
+
 /**
  * Formule d'Airy pour une lame symétrique en incidence normale.
  * Sert de contrôle indépendant du TMM.
@@ -493,19 +538,15 @@ export function sweepFrequency({
   aspectRatio = 1,
   inclusionType = null,
   saturation = 1,
+  layers = null,
 }) {
   const rows = [];
   for (let i = 0; i < points; i += 1) {
     const f = frequencyMinHz + ((frequencyMaxHz - frequencyMinHz) * i) / (points - 1);
     const phase = inclusionType ? porePermittivity(inclusionType, f, saturation) : epsInclusion;
     const epsWall = maxwellGarnettSpheroid(epsMatrix, phase, fraction, shape, aspectRatio);
-    const s = computeSlab({
-      frequencyHz: f,
-      thetaDeg,
-      polarization,
-      epsWall,
-      thicknessM,
-    });
+    const stack=layers?.map(l=>({name:l.name,thicknessM:l.thicknessM,eps:l.material==='concrete'?maxwellGarnettSpheroid(epsMatrix,phase,fraction,l.shape||shape,l.aspectRatio||aspectRatio):l.material==='water'?inclusionPermittivity('water',f):l.eps}))||null;
+    const s = stack ? computeMultilayer({frequencyHz:f,thetaDeg,polarization,layers:stack}) : computeSlab({frequencyHz:f,thetaDeg,polarization,epsWall,thicknessM});
     rows.push({ x: f / 1e9, R: s.R, T: s.T, A: s.absorption });
   }
   return rows;

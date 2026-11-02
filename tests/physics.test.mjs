@@ -5,6 +5,7 @@ import {
   airyNormal,
   brewsterAngle,
   computeSlab,
+  computeMultilayer,
   electricFieldProfile,
   matrixPermittivity,
   maxwellGarnett,
@@ -225,4 +226,33 @@ test("le cube reste un modèle isotrope stable et conserve l'énergie",()=>{
 test("balayage fréquentiel recalcule la dispersion de l'eau",()=>{
  const rows=sweepFrequency({fraction:.2,frequencyMinHz:.5e9,frequencyMaxHz:6e9,thetaDeg:0,polarization:"TE",epsMatrix:EPS_CONCRETE,thicknessM:THICKNESS_M,inclusionType:"water",saturation:1,points:9});
  assert.ok(rows.some((row,i)=>i>0&&Math.abs(row.R-rows[0].R)>1e-7));
+});
+
+
+test("multicouche : une seule couche reproduit le résultat lame homogène", () => {
+  const eps=matrixPermittivity(5.2,0.025), f=2.4e9, d=0.12;
+  const single=computeSlab({frequencyHz:f,thetaDeg:31,polarization:"TE",epsWall:eps,thicknessM:d});
+  const multi=computeMultilayer({frequencyHz:f,thetaDeg:31,polarization:"TE",layers:[{eps,thicknessM:d}]});
+  assert.ok(Math.abs(single.R-multi.R)<1e-10);
+  assert.ok(Math.abs(single.T-multi.T)<1e-10);
+});
+test("multicouche : bilan énergétique et absorption passive", () => {
+  const layers=[
+    {eps:matrixPermittivity(5.5,0.025),thicknessM:0.08},
+    {eps:matrixPermittivity(2.4,0.01),thicknessM:0.035},
+    {eps:matrixPermittivity(6.1,0.04),thicknessM:0.06}
+  ];
+  for(const polarization of ["TE","TM"]){
+    const r=computeMultilayer({frequencyHz:3.1e9,thetaDeg:42,polarization,layers});
+    assert.ok(r.R>=0&&r.T>=0&&r.absorption>=-1e-9);
+    assert.ok(Math.abs(r.R+r.T+r.absorption-1)<1e-12);
+  }
+});
+test("multicouche : l'ordre des couches influence la réponse", () => {
+  const a={eps:matrixPermittivity(2.2,0.01),thicknessM:0.08};
+  const b={eps:matrixPermittivity(7.0,0.08),thicknessM:0.08};
+  const args={frequencyHz:2.7e9,thetaDeg:25,polarization:"TM"};
+  const ab=computeMultilayer({...args,layers:[a,b]});
+  const ba=computeMultilayer({...args,layers:[b,a]});
+  assert.ok(Math.abs(ab.R-ba.R)>1e-7);
 });
