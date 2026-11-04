@@ -47,19 +47,48 @@
   <div class="assumption"><b>Hypothèse de calcul</b><p>Les bulles sphériques sont remplacées par un milieu homogène équivalent (Maxwell–Garnett). Leur rayon et leur arrangement ne sont donc pas résolus individuellement.</p></div>
  </aside>
  <section class="center-column">
-  <div class="scene-head"><div><span class="eyebrow">02 / VISUALISATION SPATIALE</span><h2>Mur de béton à inclusions</h2><p>Glisser pour orbiter · molette pour zoomer · clic droit pour déplacer</p></div><div class="scene-tools"><button id="viewFront" class="tool active">Face</button><button id="viewIso" class="tool">3D</button><button id="fullscreen" class="tool">⛶</button></div></div>
-  <div class="scene-wrap" id="sceneWrap"><div id="scene" aria-label="Scène 3D interactive du mur poreux"></div><div class="scene-legend"><span><i class="legend-dot incident"></i> Incidente</span><span><i class="legend-dot reflected"></i> Réfléchie</span><span><i class="legend-dot transmitted"></i> Réfractée / transmise</span></div><div class="scene-note" id="sceneNote">SPHÈRES · DISTRIBUTION ILLUSTRATIVE</div><div class="scene-axis">x <b>→</b> &nbsp; y <b>↑</b> &nbsp; z <b>↗</b></div></div>
-  <section class="propagation-schematic" aria-label="Propagation des ondes incidente, réfléchie et réfractée">
-   <div class="schematic-title"><b>Propagation des ondes électromagnétiques</b><span>Avant le mur · dans le béton · après le mur</span></div>
-   <div class="wave-path">
-    <div class="wave-zone"><span>ONDE INCIDENTE</span><i class="wave-lines incident-lines">))))))</i><small>Vers le mur</small></div>
-    <div class="wave-wall"><b>MUR DE BÉTON</b><span>Milieu poreux</span></div>
-    <div class="wave-zone"><span>ONDE RÉFRACTÉE</span><i class="wave-lines transmitted-lines">))))))</i><small>Après traversée</small></div>
-    <div class="wave-reflection"><b>ONDE RÉFLÉCHIE</b><span>Retour vers le milieu incident</span></div>
-   </div>
-   <p>Les fronts d’onde animés sont représentés avant la paroi, à l’intérieur du béton et après la paroi. Le schéma est illustratif ; les coefficients R et T sont calculés par le modèle électromagnétique.</p>
-  </section>
-  <div class="scene-foot"><span><b id="sceneFreq">1,00 GHz</b> fréquence</span><span><b id="sceneAngle">0°</b> incidence</span><span><b id="scenePol">TE</b> polarisation</span><span><b id="sceneLambda">30,0 cm</b> λ₀ dans l’air</span></div>
+  <div class="scene-head"><div><span class="eyebrow">02 / VISUALISATION SPATIALE</span><h2>Mur de béton à inclusions</h2><p>Glisser pour orbiter · molette pour zoomer · clic droit pour déplacer</p></div><div class="scene-tools"><button id="viewFront" class="tool active">Rayons</button><button id="viewIso" class="tool">Vue 3D</button><button id="fullscreen" class="tool">⛶</button></div></div>
+  <div class="scene-wrap ray-view" id="sceneWrap">
+   <div id="scene" aria-label="Vue 3D interactive du mur poreux"></div>
+   <svg id="rayCanvas" class="ray-canvas" viewBox="0 0 1000 560" role="img" aria-label="Projecteur envoyant un rayon incident vers un mur poreux, avec rayon réfléchi, propagation intérieure et rayon transmis">
+    <defs>
+     <linearGradient id="wallGlass" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#a9dff5" stop-opacity=".78"/><stop offset=".55" stop-color="#d9f2ff" stop-opacity=".52"/><stop offset="1" stop-color="#72b7d8" stop-opacity=".7"/></linearGradient>
+     <linearGradient id="beamBlue"><stop stop-color="#36a8ff" stop-opacity=".12"/><stop offset="1" stop-color="#087eea" stop-opacity=".95"/></linearGradient>
+     <marker id="arrBlue" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#087eea"/></marker>
+     <marker id="arrRed" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#e4473c"/></marker>
+     <marker id="arrOrange" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#f29b27"/></marker>
+     <marker id="arrGreen" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#149b63"/></marker>
+     <pattern id="rayGrid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#9fc2d7" stroke-opacity=".22"/></pattern>
+    </defs>
+    <rect width="1000" height="560" fill="url(#rayGrid)"/>
+    <g class="ray-source" transform="translate(52 250)">
+     <rect x="0" y="24" width="110" height="54" rx="17" fill="#273d52"/><rect x="78" y="13" width="40" height="76" rx="16" fill="#49657e"/>
+     <ellipse cx="116" cy="51" rx="12" ry="37" fill="#b8e9ff" stroke="#087eea" stroke-width="5"/><ellipse cx="119" cy="51" rx="5" ry="24" fill="#f3fdff"/>
+     <path d="M28 78V104M8 105H52" stroke="#405a70" stroke-width="10" stroke-linecap="round"/>
+     <text x="45" y="-4" class="svg-kicker">SOURCE / ÉMETTEUR</text><text x="45" y="12" class="svg-small">Projecteur d’onde</text>
+    </g>
+    <path d="M165 301H835" class="normal-line"/><text x="168" y="291" class="svg-small">NORMALE À LA PAROI</text>
+    <rect x="430" y="95" width="225" height="370" rx="5" fill="url(#wallGlass)" stroke="#267fae" stroke-width="3"/>
+    <rect x="440" y="105" width="205" height="350" fill="#e6f7ff" fill-opacity=".18" stroke="#ffffff" stroke-opacity=".8"/>
+    <g id="wallLayerMarks"></g><g id="wallBubbles"></g>
+    <text x="542" y="78" text-anchor="middle" class="svg-wall-title">MUR POREUX</text><text id="wallMeta" x="542" y="485" text-anchor="middle" class="svg-small">Béton · porosité 20 % · 1 couche</text>
+    <path id="incidentRay" class="svg-ray ray-blue" marker-end="url(#arrBlue)"/>
+    <path id="reflectedRay" class="svg-ray ray-red" marker-end="url(#arrRed)"/>
+    <path id="insideRay" class="svg-ray ray-orange" marker-end="url(#arrOrange)"/>
+    <path id="transmittedRay" class="svg-ray ray-green" marker-end="url(#arrGreen)"/>
+    <path id="incidentArc" class="svg-angle angle-blue"/><path id="reflectedArc" class="svg-angle angle-red"/><path id="transmittedArc" class="svg-angle angle-green"/>
+    <circle cx="430" cy="280" r="8" fill="#fff" stroke="#087eea" stroke-width="3"/>
+    <text id="incidentLabel" x="260" y="185" class="svg-label label-blue">ONDE INCIDENTE</text>
+    <text id="reflectedLabel" x="180" y="430" class="svg-label label-red">ONDE RÉFLÉCHIE</text>
+    <text x="535" y="250" class="svg-label label-orange" text-anchor="middle">PROPAGATION DANS LE MUR</text><text id="insideAngleLabel" x="535" y="272" class="svg-small" text-anchor="middle">θ dans le mur</text>
+    <text id="transmittedLabel" x="755" y="390" class="svg-label label-green">ONDE TRANSMISE</text>
+    <text id="svgThetaI" x="340" y="260" class="svg-angle-text blue-text">θᵢ = 0°</text><text id="svgThetaR" x="280" y="320" class="svg-angle-text red-text">θᵣ = 0°</text><text id="svgThetaT" x="690" y="310" class="svg-angle-text green-text">θₜ = 0°</text>
+    <g transform="translate(790 32)"><rect width="184" height="116" rx="12" fill="#fff" fill-opacity=".92" stroke="#d6e7f2"/><path d="M18 27H54" stroke="#087eea" stroke-width="4" marker-end="url(#arrBlue)"/><text x="67" y="31" class="svg-small">Incidente</text><path d="M18 53H54" stroke="#e4473c" stroke-width="4" marker-end="url(#arrRed)"/><text x="67" y="57" class="svg-small">Réfléchie</text><path d="M18 79H54" stroke="#f29b27" stroke-width="4" marker-end="url(#arrOrange)"/><text x="67" y="83" class="svg-small">Dans le mur</text><path d="M18 105H54" stroke="#149b63" stroke-width="4" marker-end="url(#arrGreen)"/><text x="67" y="109" class="svg-small">Transmise</text></g>
+   </svg>
+   <div class="scene-legend"><span><i class="legend-dot incident"></i> Incidente</span><span><i class="legend-dot reflected"></i> Réfléchie</span><span><i class="legend-dot refracted"></i> Intérieure</span><span><i class="legend-dot transmitted"></i> Transmise</span></div>
+   <div class="scene-note" id="sceneNote">SPHÈRES · DISTRIBUTION ILLUSTRATIVE</div>
+  </div>
+  <div class="scene-foot"><span><b id="sceneFreq">1,00 GHz</b> fréquence</span><span><b id="sceneAngle">0°</b> incidence</span><span><b id="rayThetaR">0°</b> réfléchi</span><span><b id="rayThetaOut">0°</b> transmis</span><span><b id="scenePol">TE</b> polarisation</span><span><b id="sceneLambda">30,0 cm</b> λ₀ dans l’air</span></div>
   <div class="chart-panel"><div class="chart-title"><div><span class="eyebrow">03 / RÉPONSE DU SYSTÈME</span><h3>Coefficients énergétiques</h3></div><div class="chart-legend"><span><i class="r"></i>R · Réflexion</span><span><i class="t"></i>T · Transmission</span><span><i class="a"></i>A · Absorption</span></div></div><canvas id="chart" height="170"></canvas><div class="chart-caption">Balayage fréquentiel · les marqueurs indiquent le point de fonctionnement actuel.</div></div>
  </section>
  <aside class="panel results">

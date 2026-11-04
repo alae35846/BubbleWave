@@ -24,7 +24,22 @@ function rebuildLayerMarkers(){
  let z=-depth/2;
  layers.slice(0,-1).forEach(l=>{z+=depth*l.thicknessM/total;const g=new THREE.EdgesGeometry(new THREE.PlaneGeometry(3,2.8));const line=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0xe5f5ff,transparent:true,opacity:.75}));line.position.z=z;layerMarkerGroup.add(line)});
 }
-function rebuildBubbles(){bubbleGroup.clear();const rand=seed(),count=Math.round(12+s.por*95),radius=.045+s.radius*.014;for(let i=0;i<count;i++){const r=radius*(.55+rand()*.9),geometry=s.shape==='cube'?new THREE.BoxGeometry(r*1.65,r*1.65,r*1.65):new THREE.SphereGeometry(r,22,16),m=new THREE.Mesh(geometry,new THREE.MeshPhysicalMaterial({color:$('bubbleColor').value,metalness:.05,roughness:.12,transparent:true,opacity:.72,transmission:.28,thickness:.12,clearcoat:1}));if(s.shape==='prolate')m.scale.set(1,1,s.aspect);else if(s.shape==='oblate')m.scale.set(1,1,1/s.aspect);m.rotation.set(rand()*Math.PI,rand()*Math.PI,rand()*Math.PI);m.position.set((rand()-.5)*2.8,(rand()-.5)*2.55,(rand()-.5)*.57);bubbleGroup.add(m)}}
+function renderSvgWall(){
+ const bubbles=$('wallBubbles'),marks=$('wallLayerMarks');if(!bubbles||!marks)return;
+ const count=Math.round(8+s.por*78),colors={air:'#d9f4ff',water:'#68bde8',ice:'#c4e8ff',aggregate:'#b7a68b'},fill=colors[s.inclusionType]||colors.air;
+ let seed=9817,rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
+ let svg='';
+ for(let i=0;i<count;i++){const x=444+rand()*197,y=115+rand()*333,r=3+rand()*11,rx=s.shape==='prolate'?r*1.65:s.shape==='oblate'?r*1.35:r,ry=s.shape==='prolate'?r*.68:s.shape==='oblate'?r*.78:r;
+  if(s.shape==='cube')svg+=`<rect x="${x-r}" y="${y-r}" width="${2*r}" height="${2*r}" rx="2" fill="${fill}" fill-opacity=".66" stroke="#fff" stroke-opacity=".8" transform="rotate(${rand()*40-20} ${x} ${y})"/>`;
+  else svg+=`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${fill}" fill-opacity=".72" stroke="#fff" stroke-opacity=".9" stroke-width="1.4"/><ellipse cx="${x-rx*.28}" cy="${y-ry*.3}" rx="${Math.max(1,rx*.24)}" ry="${Math.max(1,ry*.2)}" fill="#fff" fill-opacity=".72"/>`;
+ }
+ bubbles.innerHTML=svg;
+ let pos=430,lines='';
+ layers.slice(0,-1).forEach(l=>{pos+=225*l.thicknessM/layers.reduce((a,x)=>a+x.thicknessM,0);lines+=`<path d="M${pos} 96V464" stroke="#287fae" stroke-width="2" stroke-dasharray="5 5" opacity=".8"/>`});
+ marks.innerHTML=lines;
+ const meta=$('wallMeta');if(meta)meta.textContent=`${s.inclusionType==='air'?'Pores d’air':s.inclusionType==='water'?'Pores humides':s.inclusionType==='ice'?'Pores gelés':'Granulats'} · ${Math.round(s.por*100)} % · ${layers.length} couche(s)`;
+}
+function rebuildBubbles(){bubbleGroup.clear();const rand=seed(),count=Math.round(12+s.por*95),radius=.045+s.radius*.014;for(let i=0;i<count;i++){const r=radius*(.55+rand()*.9),geometry=s.shape==='cube'?new THREE.BoxGeometry(r*1.65,r*1.65,r*1.65):new THREE.SphereGeometry(r,22,16),m=new THREE.Mesh(geometry,new THREE.MeshPhysicalMaterial({color:$('bubbleColor').value,metalness:.05,roughness:.12,transparent:true,opacity:.72,transmission:.28,thickness:.12,clearcoat:1}));if(s.shape==='prolate')m.scale.set(1,1,s.aspect);else if(s.shape==='oblate')m.scale.set(1,1,1/s.aspect);m.rotation.set(rand()*Math.PI,rand()*Math.PI,rand()*Math.PI);m.position.set((rand()-.5)*2.8,(rand()-.5)*2.55,(rand()-.5)*.57);bubbleGroup.add(m)}renderSvgWall()}
 
 const waveLines={incident:null,reflected:null,transmitted:null,inside:null};
 function makeWaveLine(color){const geo=new THREE.BufferGeometry(),pts=Array.from({length:120},()=>new THREE.Vector3());geo.setFromPoints(pts);const line=new THREE.Line(geo,new THREE.LineBasicMaterial({color,transparent:true,opacity:1,linewidth:3}));line.frustumCulled=false;return line}
@@ -44,7 +59,7 @@ function updateWavefronts(t){
 }
 rebuildBubbles();rebuildWaves();
 function resize(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}new ResizeObserver(resize).observe(host);resize();
-function calculate(){s.f=+$('freq').value*1e9;s.angle=+$('angle').value;s.por=+$('por').value/100;s.thick=+$('thick').value/100;s.eps=+$('eps').value;s.loss=+$('loss').value;s.radius=+$('radius').value;s.aspect=+$('aspect').value;s.shape=$('shape').value;s.inclusionType=$('inclusionType').value;s.saturation=+$('saturation').value/100;
+function calculate(){s.f=+$('freq').value*1e9;s.angle=+$('angle').value;s.por=+$('por').value/100;s.thick=+$('thick').value/100;if(layers.length===1)layers[0].thicknessM=s.thick;s.eps=+$('eps').value;s.loss=+$('loss').value;s.radius=+$('radius').value;s.aspect=+$('aspect').value;s.shape=$('shape').value;s.inclusionType=$('inclusionType').value;s.saturation=+$('saturation').value/100;
 const matrix=matrixPermittivity(s.eps,s.loss),waterOrPhase=porePermittivity(s.inclusionType,s.f,s.saturation);epsEff=maxwellGarnettSpheroid(matrix,waterOrPhase,s.por,s.shape,s.aspect);layers[0].eps=epsEff;layers[0].shape=s.shape;layers[0].aspectRatio=s.aspect;
 result=computeMultilayer({frequencyHz:s.f,thetaDeg:s.angle,polarization:s.pol,layers:layers.map(l=>({name:l.name,thicknessM:l.thicknessM,eps:l.material==='concrete'?epsEff:layerPermittivity(l.material)}))});
 $('freqOut').textContent=fmt(s.f/1e9,2)+' GHz';$('angleOut').textContent=s.angle+'°';$('porOut').textContent=fmt(s.por*100,0)+' %';$('thickOut').textContent=fmt(s.thick*100,1)+' cm';$('radiusOut').textContent=fmt(s.radius,1)+' mm';$('aspectOut').textContent=fmt(s.aspect,1)+' : 1';$('saturationOut').textContent=fmt(s.saturation*100,0)+' %';$('saturationControl').style.display=s.inclusionType==='water'?'block':'none';$('porLabel').textContent=s.inclusionType==='aggregate'?'Fraction volumique de granulat':'Porosité volumique';$('aspectOut').textContent=(s.shape==='sphere'||s.shape==='cube'?'1,0':fmt(s.aspect,1))+' : 1';$('materialNote').textContent=({air:'Air : εr ≈ 1 ; pores secs.',water:'Eau à 25 °C : modèle de Debye dispersif ; le curseur règle la fraction des pores remplie.',ice:'Glace : permittivité constante indicative (approximation pédagogique).',aggregate:'Granulat minéral : inclusion solide indicative, ce n’est pas un pore.'})[s.inclusionType];
@@ -54,30 +69,37 @@ for(const [id,v] of [['barR',result.R],['barT',result.T],['barA',result.absorpti
 $('balance').textContent='R + T + A = '+fmt((result.R+result.T+result.absorption)*100,3)+' %';$('balanceState').textContent=Math.abs(result.R+result.T+result.absorption-1)<1e-9?'Conservation vérifiée':'Vérifier le bilan';
 $('epsEff').textContent=fmt(epsEff.re,3)+' − j'+fmt(Math.abs(epsEff.im),3);$('indexEff').textContent=fmt(result.nReal,3);$('lambdaWall').textContent=fmt(result.lambdaWall*100,2)+' cm';$('atten').textContent=fmt(result.attenuationDb,2)+' dB';
 function updateRayDiagram(){
- const theta=s.angle*Math.PI/180,deg=x=>fmt(x*180/Math.PI,1)+'°';
- const y=105,x0=320;
- const xIncident=x0-105*Math.cos(theta),yIncident=y+105*Math.sin(theta);
- const xReflected=x0-105*Math.cos(theta),yReflected=y-105*Math.sin(theta);
- const n2=Math.max(1.001,result.nReal||1.001);
- const thetaT=Math.asin(Math.min(1,Math.sin(theta)/n2));
- const xTransmitted=430+190*Math.cos(thetaT),yTransmitted=y-190*Math.sin(thetaT);
+ const theta=s.angle*Math.PI/180,deg=x=>fmt(x*180/Math.PI,1)+'°',clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ const x0=430,x1=655,y0=280,dx=x1-x0,thetaR=theta,thetaOut=theta;
+ const firstN=Math.max(1.001,result.nReal||1.001);
+ const layerData=result.layers?.length?result.layers:[{n:{re:firstN}}];
+ const internalAngles=layerData.map(l=>Math.asin(clamp(Math.sin(theta)/Math.max(1.001,l.n?.re||firstN),0,1)));
+ const incidentDy=155*Math.tan(theta),yIncident=clamp(y0+incidentDy,115,445),yReflected=clamp(y0-incidentDy,115,445);
  const set=(id,d)=>{const el=$(id);if(el)el.setAttribute('d',d)};
- set('incidentRay',`M${xIncident} ${yIncident}L${x0} ${y}`);
- set('reflectedRay',`M${x0} ${y}L${xReflected} ${yReflected}`);
- set('transmittedRay',`M430 ${y}L${xTransmitted} ${yTransmitted}`);
- const inc=$('incidentLabel'),ref=$('reflectedLabel');
- if(inc)inc.textContent='INCIDENTE · θᵢ = '+deg(theta);
- if(ref)ref.textContent='RÉFLÉCHIE · θᵣ = '+deg(theta);
- const ti=$('rayThetaI'),tr=$('rayThetaR'),tt=$('rayThetaOut');
- if(ti)ti.textContent=s.angle===0?'0° · incidence normale':deg(theta)+' · oblique';
- if(tr)tr.textContent=deg(theta);
- if(tt)tt.textContent=deg(thetaT)+' · réfraction';
-}
-
-const c=x=>fmt(x.re,3)+(x.im<0?' − j':' + j')+fmt(Math.abs(x.im),3);$('gamma').textContent=c(result.Gamma);$('tau').textContent=c(result.tau);
+ set('incidentRay',`M165 ${yIncident} L${x0} ${y0}`);
+ set('reflectedRay',`M${x0} ${y0} L165 ${yReflected}`);
+ let x=x0,y=y0,insidePath=`M${x0} ${y0}`;
+ layerData.forEach((layer,i)=>{const width=dx*(Math.max(.001,layer.thicknessM||1)/Math.max(.001,result.totalThickness||1));x=i===layerData.length-1?x1:x0+dx*layerData.slice(0,i+1).reduce((a,l)=>a+(l.thicknessM||1),0)/Math.max(.001,result.totalThickness||1);y=clamp(y+width*Math.tan(internalAngles[i]),115,445);insidePath+=` L${x} ${y}`;});
+ set('insideRay',insidePath);
+ const yExit=y;
+ set('transmittedRay',`M${x1} ${yExit} L${x1+190} ${clamp(yExit+190*Math.tan(thetaOut),90,480)}`);
+ const arc=(r,ang,sign)=>{const endX=x0-r*Math.cos(ang),endY=y0+sign*r*Math.sin(ang);return `M${x0-r} ${y0} A${r} ${r} 0 0 ${sign>0?0:1} ${endX} ${endY}`};
+ set('incidentArc',arc(64,theta,1));set('reflectedArc',arc(82,theta,-1));
+ set('transmittedArc',`M${x1+55} ${yExit} A55 55 0 0 1 ${x1+55*Math.cos(thetaOut)} ${yExit+55*Math.sin(thetaOut)}`);
+ const insideAngle=internalAngles[0]||0;
+ const labels=[['svgThetaI',`θᵢ = ${deg(theta)}`],['svgThetaR',`θᵣ = ${deg(thetaR)}`],['svgThetaT',`θₜ = ${deg(thetaOut)}`],['rayThetaI',deg(theta)],['rayThetaR',deg(thetaR)],['rayThetaOut',deg(thetaOut)]];
+ labels.forEach(([id,v])=>{const el=$(id);if(el)el.textContent=v});
+ const inc=$('incidentLabel'),ref=$('reflectedLabel'),trans=$('transmittedLabel');
+ if(inc)inc.textContent='ONDE INCIDENTE · '+deg(theta);
+ if(ref)ref.textContent='ONDE RÉFLÉCHIE · '+deg(thetaR);
+ if(trans)trans.textContent='ONDE TRANSMISE · '+deg(thetaOut);
+ const insideText=$('insideAngleLabel');if(insideText)insideText.textContent='θ dans le mur = '+deg(insideAngle);
+ const angle=$('sceneAngle');if(angle)angle.textContent=deg(theta);
+ const note=$('sceneNote');if(note)note.textContent=({sphere:'SPHÈRES',prolate:'SPHÉROÏDES ALLONGÉS',oblate:'SPHÉROÏDES APLATIS',cube:'INCLUSIONS CUBIQUES'})[s.shape]+' · '+Math.round(s.por*100)+' %';
+}const c=x=>fmt(x.re,3)+(x.im<0?' − j':' + j')+fmt(Math.abs(x.im),3);$('gamma').textContent=c(result.Gamma);$('tau').textContent=c(result.tau);
 $('insight').innerHTML='<b>Lecture physique</b><p>'+(s.angle===0?'Incidence normale : les coefficients TE et TM sont identiques. ':'Incidence oblique : les admittances dépendent de la polarisation. ')+(s.por>0?'Les bulles diminuent la permittivité effective du béton. ':'Sans porosité, le mur est modélisé comme du béton plein. ')+(result.absorption>result.R?'Ici, la dissipation dans le mur domine la réflexion.':'Ici, la réflexion est supérieure à l’absorption.')+'</p>';
 $('sceneNote').textContent=({sphere:'SPHÈRES',prolate:'SPHÉROÏDES ALLONGÉS',oblate:'SPHÉROÏDES APLATIS',cube:'CUBES · GÉOMÉTRIE ILLUSTRATIVE'})[s.shape]+' · '+Math.round(s.por*100)+' %';
-mat.color.set($('wallColor').value);wall.scale.z=Math.max(.3,result.totalThickness/.09);wall.position.z=0;rebuildLayerMarkers();bubbleGroup.scale.z=Math.max(.3,s.thick/.09);bubbleGroup.visible=$('cutaway').checked;waveGroup.visible=$('wavefronts').checked;
+mat.color.set($('wallColor').value);wall.scale.z=Math.max(.3,result.totalThickness/.09);wall.position.z=0;rebuildLayerMarkers();renderSvgWall();bubbleGroup.scale.z=Math.max(.3,s.thick/.09);bubbleGroup.visible=$('cutaway').checked;waveGroup.visible=$('wavefronts').checked;
 updateRayDiagram();drawChart();updateUrl();
 }
 function drawChart(){const rows=sweepFrequency({layers:layers.map(l=>({name:l.name,material:l.material,thicknessM:l.thicknessM,eps:l.eps,shape:s.shape,aspectRatio:s.aspect})),fraction:s.por,frequencyMinHz:.5e9,frequencyMaxHz:6e9,thetaDeg:s.angle,polarization:s.pol,epsMatrix:matrixPermittivity(s.eps,s.loss),thicknessM:s.thick,layers:layers.map(l=>({name:l.name,material:l.material,thicknessM:l.thicknessM,eps:l.eps,shape:s.shape,aspectRatio:s.aspect})),shape:s.shape,aspectRatio:s.aspect,inclusionType:s.inclusionType,saturation:s.saturation,points:121});const canvas=$('chart'),ctx=canvas.getContext('2d'),w=canvas.clientWidth,h=220,dpr=Math.min(devicePixelRatio,2);canvas.width=w*dpr;canvas.height=h*dpr;ctx.scale(dpr,dpr);const L=34,R=10,T=12,B=24,pw=w-L-R,ph=h-T-B;ctx.clearRect(0,0,w,h);ctx.font='9px DM Mono';ctx.fillStyle='#8197ab';for(let i=0;i<=4;i++){const y=T+ph*i/4;ctx.strokeStyle='#263b4d';ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.fillText((100-i*25)+'%',2,y+3)}ctx.fillText('.5 GHz',L,h-5);ctx.fillText('6 GHz',w-48,h-5);for(const [key,color] of [['R','#ff806f'],['T','#50d6ad'],['A','#f3b85f']]){ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();rows.forEach((p,i)=>{const x=L+pw*i/(rows.length-1),y=T+ph*(1-p[key]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()}const ix=(s.f/1e9-.5)/5.5*pw;ctx.strokeStyle='#eaf3fa';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(L+ix,T);ctx.lineTo(L+ix,T+ph);ctx.stroke();ctx.setLineDash([])}
@@ -102,14 +124,14 @@ renderLayerList();
 
 let last=0;function animate(t){requestAnimationFrame(animate);const dt=Math.min(.05,(t-last)/1000||0);last=t;orbit.update();if(waveGroup?.visible)updateWavefronts(t);renderer.render(scene,camera)}requestAnimationFrame(animate);
 function updateUrl(){const u=new URL(location.href);u.searchParams.set('f',(s.f/1e9).toFixed(2));u.searchParams.set('p',(s.por*100).toFixed(0));u.searchParams.set('a',String(s.angle));u.searchParams.set('pol',s.pol);u.searchParams.set('shape',s.shape);u.searchParams.set('aspect',String(s.shape==='sphere'||s.shape==='cube'?1:s.aspect));u.searchParams.set('type',s.inclusionType);u.searchParams.set('sat',String(Math.round(s.saturation*100)));history.replaceState({},'',u)}
-['freq','angle','por','thick','radius','aspect','saturation'].forEach(id=>$(id).addEventListener('input',()=>{if(id==='por')document.querySelectorAll('[data-por]').forEach(b=>b.classList.toggle('selected',+b.dataset.por===+$('por').value));calculate();if(id==='thick')layers[0].thicknessM=s.thick;if(id==='radius'||id==='por'||id==='aspect')rebuildBubbles()}));
+['freq','angle','por','thick','radius','aspect','saturation'].forEach(id=>$(id).addEventListener('input',()=>{if(id==='por')document.querySelectorAll('[data-por]').forEach(b=>b.classList.toggle('selected',+b.dataset.por===+$('por').value));calculate();if(id==='radius'||id==='por'||id==='aspect')rebuildBubbles()}));
 ['eps','loss'].forEach(id=>$(id).addEventListener('change',calculate));
 document.querySelectorAll('[data-pol]').forEach(b=>b.addEventListener('click',()=>{s.pol=b.dataset.pol;document.querySelectorAll('[data-pol]').forEach(x=>x.classList.toggle('selected',x===b));calculate()}));
 document.querySelectorAll('[data-por]').forEach(b=>b.addEventListener('click',()=>{$('por').value=b.dataset.por;document.querySelectorAll('[data-por]').forEach(x=>x.classList.toggle('selected',x===b));calculate();rebuildBubbles()}));
 $('shape').addEventListener('change',()=>{s.shape=$('shape').value;$('aspect').disabled=s.shape==='cube'||s.shape==='sphere';calculate();rebuildBubbles()});$('inclusionType').addEventListener('change',()=>{calculate();rebuildBubbles()});
 ['wallColor','bubbleColor'].forEach(id=>$(id).addEventListener('input',()=>{if(id==='wallColor')mat.color.set($('wallColor').value);else rebuildBubbles()}));
 $('cutaway').addEventListener('change',()=>bubbleGroup.visible=$('cutaway').checked);$('wavefronts').addEventListener('change',()=>waveGroup.visible=$('wavefronts').checked);
-$('viewFront').onclick=()=>{camera.position.set(0,0,8);orbit.target.set(0,0,0);$('viewFront').classList.add('active');$('viewIso').classList.remove('active')};$('viewIso').onclick=()=>{camera.position.set(4.4,3.1,6.7);orbit.target.set(0,0,0);$('viewIso').classList.add('active');$('viewFront').classList.remove('active')};
+$('viewFront').onclick=()=>{ $('sceneWrap').classList.add('ray-view');$('viewFront').classList.add('active');$('viewIso').classList.remove('active')};$('viewIso').onclick=()=>{ $('sceneWrap').classList.remove('ray-view');camera.position.set(4.4,3.1,6.7);orbit.target.set(0,0,0);$('viewIso').classList.add('active');$('viewFront').classList.remove('active')};
 $('fullscreen').onclick=()=>{const el=$('sceneWrap');if(!document.fullscreenElement)el.requestFullscreen?.();else document.exitFullscreen?.()};
 const settingsDrawer=$('settingsDrawer'),settingsToggle=$('toggleControls');
 function setSettingsOpen(open){document.body.classList.toggle('settings-open',open);settingsToggle.setAttribute('aria-expanded',String(open));settingsToggle.textContent=open?'✕ Fermer':'☰ Paramètres'}
@@ -119,7 +141,7 @@ settingsToggle.addEventListener('click',()=>{
 });
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.body.classList.contains('settings-open'))setSettingsOpen(false)});
 setSettingsOpen(false);
-$('theme').onclick=()=>{document.body.classList.toggle('light');document.documentElement.dataset.theme=document.body.classList.contains('light')?'light':'dark'};
+$('theme').onclick=()=>{document.body.classList.toggle('light');document.documentElement.dataset.theme=document.body.classList.contains('light')?'light':'dark'};document.body.classList.add('light');$('sceneWrap').classList.add('ray-view');
 $('reset').onclick=()=>{layers=[{id:1,name:'Béton',material:'concrete',thicknessM:.09,eps:{re:6,im:-.18}}];nextLayerId=2;renderLayerList();Object.assign(s,{f:1e9,angle:0,pol:'TE',por:.2,thick:.09,eps:6,loss:.03,radius:.5,shape:'sphere',aspect:2,inclusionType:'air',saturation:1});$('shape').value='sphere';$('inclusionType').value='air';$('saturation').value=100;$('aspect').disabled=false;$('aspect').value=2;$('freq').value=1;$('angle').value=0;$('por').value=20;$('thick').value=9;$('eps').value=6;$('loss').value=.03;$('radius').value=.5;document.querySelectorAll('[data-pol]').forEach(b=>b.classList.toggle('selected',b.dataset.pol==='TE'));document.querySelectorAll('[data-por]').forEach(b=>b.classList.toggle('selected',b.dataset.por==='20'));calculate();rebuildBubbles()};
 $('export').onclick=()=>{const rows=sweepFrequency({layers:layers.map(l=>({name:l.name,material:l.material,thicknessM:l.thicknessM,eps:l.eps,shape:s.shape,aspectRatio:s.aspect})),fraction:s.por,frequencyMinHz:.5e9,frequencyMaxHz:6e9,thetaDeg:s.angle,polarization:s.pol,epsMatrix:matrixPermittivity(s.eps,s.loss),thicknessM:s.thick,shape:s.shape,aspectRatio:s.aspect,inclusionType:s.inclusionType,saturation:s.saturation,points:221});const csv=['frequence_GHz,reflection_R,transmission_T,absorption_A',...rows.map(p=>[p.x,p.R,p.T,p.A].join(','))].join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='bubblewave-resultats.csv';a.click();URL.revokeObjectURL(a.href)};
 const params=new URLSearchParams(location.search);if(params.has('shape')){$('shape').value=params.get('shape');s.shape=$('shape').value}if(params.has('aspect')){$('aspect').value=params.get('aspect');s.aspect=+$('aspect').value}if(s.shape==='cube'||s.shape==='sphere')$('aspect').disabled=true;if(params.has('f'))$('freq').value=params.get('f');if(params.has('p'))$('por').value=params.get('p');if(params.has('a'))$('angle').value=params.get('a');if(params.has('type')&&['air','water','ice','aggregate'].includes(params.get('type'))){$('inclusionType').value=params.get('type');s.inclusionType=params.get('type')}if(params.has('sat'))$('saturation').value=params.get('sat');if(params.has('pol')){s.pol=params.get('pol')==='TM'?'TM':'TE';document.querySelectorAll('[data-pol]').forEach(b=>b.classList.toggle('selected',b.dataset.pol===s.pol))}calculate();
