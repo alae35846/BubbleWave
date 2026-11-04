@@ -80,7 +80,7 @@
     <circle cx="430" cy="280" r="8" fill="#fff" stroke="#087eea" stroke-width="3"/>
     <text id="incidentLabel" x="260" y="185" class="svg-label label-blue">ONDE INCIDENTE</text>
     <text id="reflectedLabel" x="180" y="430" class="svg-label label-red">ONDE RÉFLÉCHIE</text>
-    <text x="535" y="250" class="svg-label label-orange" text-anchor="middle">PROPAGATION DANS LE MUR</text>
+    <text x="535" y="250" class="svg-label label-orange" text-anchor="middle">PROPAGATION DANS LE MUR</text><text id="insideAngleLabel" x="535" y="272" class="svg-small" text-anchor="middle">θ dans le mur</text>
     <text id="transmittedLabel" x="755" y="390" class="svg-label label-green">ONDE TRANSMISE</text>
     <text id="svgThetaI" x="340" y="260" class="svg-angle-text blue-text">θᵢ = 0°</text><text id="svgThetaR" x="280" y="320" class="svg-angle-text red-text">θᵣ = 0°</text><text id="svgThetaT" x="690" y="310" class="svg-angle-text green-text">θₜ = 0°</text>
     <g transform="translate(790 32)"><rect width="184" height="116" rx="12" fill="#fff" fill-opacity=".92" stroke="#d6e7f2"/><path d="M18 27H54" stroke="#087eea" stroke-width="4" marker-end="url(#arrBlue)"/><text x="67" y="31" class="svg-small">Incidente</text><path d="M18 53H54" stroke="#e4473c" stroke-width="4" marker-end="url(#arrRed)"/><text x="67" y="57" class="svg-small">Réfléchie</text><path d="M18 79H54" stroke="#f29b27" stroke-width="4" marker-end="url(#arrOrange)"/><text x="67" y="83" class="svg-small">Dans le mur</text><path d="M18 105H54" stroke="#149b63" stroke-width="4" marker-end="url(#arrGreen)"/><text x="67" y="109" class="svg-small">Transmise</text></g>
@@ -88,7 +88,7 @@
    <div class="scene-legend"><span><i class="legend-dot incident"></i> Incidente</span><span><i class="legend-dot reflected"></i> Réfléchie</span><span><i class="legend-dot refracted"></i> Intérieure</span><span><i class="legend-dot transmitted"></i> Transmise</span></div>
    <div class="scene-note" id="sceneNote">SPHÈRES · DISTRIBUTION ILLUSTRATIVE</div>
   </div>
-  <div class="scene-foot"><span><b id="sceneFreq">1,00 GHz</b> fréquence</span><span><b id="sceneAngle">0°</b> incidence</span><span><b id="rayThetaR">0°</b> réfléchi</span><span><b id="rayThetaOut">0°</b> transmis</span><span><b id="scenePol">TE</b> polarisation</span><span><b id="sceneLambda">30,0 cm</b> λ₀ dans l’air</span></div>
+  <div class="scene-foot"><span><b id="sceneFreq">1,00 GHz</b> fréquence</span><span><b id="sceneAngle">0°</b> incidence</span><span><b id="rayThetaR">0°</b> réfléchi</span><span><b id="rayThetaOut">0°</b> transmis</span><span><b id="rayThetaR">0°</b> réfléchi</span><span><b id="rayThetaOut">0°</b> transmis</span><span><b id="scenePol">TE</b> polarisation</span><span><b id="sceneLambda">30,0 cm</b> λ₀ dans l’air</span></div>
   <div class="chart-panel"><div class="chart-title"><div><span class="eyebrow">03 / RÉPONSE DU SYSTÈME</span><h3>Coefficients énergétiques</h3></div><div class="chart-legend"><span><i class="r"></i>R · Réflexion</span><span><i class="t"></i>T · Transmission</span><span><i class="a"></i>A · Absorption</span></div></div><canvas id="chart" height="170"></canvas><div class="chart-caption">Balayage fréquentiel · les marqueurs indiquent le point de fonctionnement actuel.</div></div>
  </section>
  <aside class="panel results">
