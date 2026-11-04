@@ -24,7 +24,22 @@ function rebuildLayerMarkers(){
  let z=-depth/2;
  layers.slice(0,-1).forEach(l=>{z+=depth*l.thicknessM/total;const g=new THREE.EdgesGeometry(new THREE.PlaneGeometry(3,2.8));const line=new THREE.LineSegments(g,new THREE.LineBasicMaterial({color:0xe5f5ff,transparent:true,opacity:.75}));line.position.z=z;layerMarkerGroup.add(line)});
 }
-function rebuildBubbles(){bubbleGroup.clear();const rand=seed(),count=Math.round(12+s.por*95),radius=.045+s.radius*.014;for(let i=0;i<count;i++){const r=radius*(.55+rand()*.9),geometry=s.shape==='cube'?new THREE.BoxGeometry(r*1.65,r*1.65,r*1.65):new THREE.SphereGeometry(r,22,16),m=new THREE.Mesh(geometry,new THREE.MeshPhysicalMaterial({color:$('bubbleColor').value,metalness:.05,roughness:.12,transparent:true,opacity:.72,transmission:.28,thickness:.12,clearcoat:1}));if(s.shape==='prolate')m.scale.set(1,1,s.aspect);else if(s.shape==='oblate')m.scale.set(1,1,1/s.aspect);m.rotation.set(rand()*Math.PI,rand()*Math.PI,rand()*Math.PI);m.position.set((rand()-.5)*2.8,(rand()-.5)*2.55,(rand()-.5)*.57);bubbleGroup.add(m)}}
+function renderSvgWall(){
+ const bubbles=$('wallBubbles'),marks=$('wallLayerMarks');if(!bubbles||!marks)return;
+ const count=Math.round(8+s.por*78),colors={air:'#d9f4ff',water:'#68bde8',ice:'#c4e8ff',aggregate:'#b7a68b'},fill=colors[s.inclusionType]||colors.air;
+ let seed=9817,rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
+ let svg='';
+ for(let i=0;i<count;i++){const x=444+rand()*197,y=115+rand()*333,r=3+rand()*11,rx=s.shape==='prolate'?r*1.65:s.shape==='oblate'?r*1.35:r,ry=s.shape==='prolate'?r*.68:s.shape==='oblate'?r*.78:r;
+  if(s.shape==='cube')svg+=`<rect x="${x-r}" y="${y-r}" width="${2*r}" height="${2*r}" rx="2" fill="${fill}" fill-opacity=".66" stroke="#fff" stroke-opacity=".8" transform="rotate(${rand()*40-20} ${x} ${y})"/>`;
+  else svg+=`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${fill}" fill-opacity=".72" stroke="#fff" stroke-opacity=".9" stroke-width="1.4"/><ellipse cx="${x-rx*.28}" cy="${y-ry*.3}" rx="${Math.max(1,rx*.24)}" ry="${Math.max(1,ry*.2)}" fill="#fff" fill-opacity=".72"/>`;
+ }
+ bubbles.innerHTML=svg;
+ let pos=430,lines='';
+ layers.slice(0,-1).forEach(l=>{pos+=225*l.thicknessM/layers.reduce((a,x)=>a+x.thicknessM,0);lines+=`<path d="M${pos} 96V464" stroke="#287fae" stroke-width="2" stroke-dasharray="5 5" opacity=".8"/>`});
+ marks.innerHTML=lines;
+ const meta=$('wallMeta');if(meta)meta.textContent=`${s.inclusionType==='air'?'Pores d’air':s.inclusionType==='water'?'Pores humides':s.inclusionType==='ice'?'Pores gelés':'Granulats'} · ${Math.round(s.por*100)} % · ${layers.length} couche(s)`;
+}
+function rebuildBubbles(){bubbleGroup.clear();const rand=seed(),count=Math.round(12+s.por*95),radius=.045+s.radius*.014;for(let i=0;i<count;i++){const r=radius*(.55+rand()*.9),geometry=s.shape==='cube'?new THREE.BoxGeometry(r*1.65,r*1.65,r*1.65):new THREE.SphereGeometry(r,22,16),m=new THREE.Mesh(geometry,new THREE.MeshPhysicalMaterial({color:$('bubbleColor').value,metalness:.05,roughness:.12,transparent:true,opacity:.72,transmission:.28,thickness:.12,clearcoat:1}));if(s.shape==='prolate')m.scale.set(1,1,s.aspect);else if(s.shape==='oblate')m.scale.set(1,1,1/s.aspect);m.rotation.set(rand()*Math.PI,rand()*Math.PI,rand()*Math.PI);m.position.set((rand()-.5)*2.8,(rand()-.5)*2.55,(rand()-.5)*.57);bubbleGroup.add(m)}renderSvgWall()}
 
 const waveLines={incident:null,reflected:null,transmitted:null,inside:null};
 function makeWaveLine(color){const geo=new THREE.BufferGeometry(),pts=Array.from({length:120},()=>new THREE.Vector3());geo.setFromPoints(pts);const line=new THREE.Line(geo,new THREE.LineBasicMaterial({color,transparent:true,opacity:1,linewidth:3}));line.frustumCulled=false;return line}
@@ -54,26 +69,26 @@ for(const [id,v] of [['barR',result.R],['barT',result.T],['barA',result.absorpti
 $('balance').textContent='R + T + A = '+fmt((result.R+result.T+result.absorption)*100,3)+' %';$('balanceState').textContent=Math.abs(result.R+result.T+result.absorption-1)<1e-9?'Conservation vérifiée':'Vérifier le bilan';
 $('epsEff').textContent=fmt(epsEff.re,3)+' − j'+fmt(Math.abs(epsEff.im),3);$('indexEff').textContent=fmt(result.nReal,3);$('lambdaWall').textContent=fmt(result.lambdaWall*100,2)+' cm';$('atten').textContent=fmt(result.attenuationDb,2)+' dB';
 function updateRayDiagram(){
- const theta=s.angle*Math.PI/180,deg=x=>fmt(x*180/Math.PI,1)+'°';
- const y=105,x0=320;
- const xIncident=x0-105*Math.cos(theta),yIncident=y+105*Math.sin(theta);
- const xReflected=x0-105*Math.cos(theta),yReflected=y-105*Math.sin(theta);
- const n2=Math.max(1.001,result.nReal||1.001);
- const thetaT=Math.asin(Math.min(1,Math.sin(theta)/n2));
- const xTransmitted=430+190*Math.cos(thetaT),yTransmitted=y-190*Math.sin(thetaT);
+ const theta=s.angle*Math.PI/180,deg=x=>fmt(x*180/Math.PI,1)+'°',clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+ const xHit=430,yHit=280,nEff=Math.max(1.001,result.nReal||1.001);
+ const thetaT=Math.asin(clamp(Math.sin(theta)/nEff,0,1));
+ const dx=155,dy=dx*Math.tan(theta),dxT=190,dyT=dxT*Math.tan(thetaT);
  const set=(id,d)=>{const el=$(id);if(el)el.setAttribute('d',d)};
- set('incidentRay',`M${xIncident} ${yIncident}L${x0} ${y}`);
- set('reflectedRay',`M${x0} ${y}L${xReflected} ${yReflected}`);
- set('transmittedRay',`M430 ${y}L${xTransmitted} ${yTransmitted}`);
- const inc=$('incidentLabel'),ref=$('reflectedLabel');
- if(inc)inc.textContent='INCIDENTE · θᵢ = '+deg(theta);
- if(ref)ref.textContent='RÉFLÉCHIE · θᵣ = '+deg(theta);
- const ti=$('rayThetaI'),tr=$('rayThetaR'),tt=$('rayThetaOut');
- if(ti)ti.textContent=s.angle===0?'0° · incidence normale':deg(theta)+' · oblique';
- if(tr)tr.textContent=deg(theta);
- if(tt)tt.textContent=deg(thetaT)+' · réfraction';
+ set('incidentRay',`M165 ${clamp(yHit+dy,115,445)} L${xHit} ${yHit}`);
+ set('reflectedRay',`M${xHit} ${yHit} L165 ${clamp(yHit-dy,115,445)}`);
+ set('insideRay',`M${xHit} ${yHit} L655 ${clamp(yHit+225*Math.tan(thetaT),125,445)}`);
+ set('transmittedRay',`M655 ${clamp(yHit+225*Math.tan(thetaT),125,445)} L${655+dxT} ${clamp(yHit+225*Math.tan(thetaT)+dyT,110,470)}`);
+ const arc=(r,ang,sign)=>{const x=xHit-r*Math.cos(ang),y=yHit+sign*r*Math.sin(ang);return `M${xHit-r} ${yHit} A${r} ${r} 0 0 ${sign>0?0:1} ${x} ${y}`};
+ set('incidentArc',arc(64,theta,1));set('reflectedArc',arc(82,theta,-1));set('transmittedArc',`M655 280 l-54 0 A54 54 0 0 1 ${655-54*Math.cos(thetaT)} ${280+54*Math.sin(thetaT)}`);
+ const labels=[['svgThetaI',`θᵢ = ${deg(theta)}`],['svgThetaR',`θᵣ = ${deg(theta)}`],['svgThetaT',`θₜ = ${deg(thetaT)}`],['rayThetaI',deg(theta)],['rayThetaR',deg(theta)],['rayThetaOut',deg(thetaT)]];
+ labels.forEach(([id,v])=>{const el=$(id);if(el)el.textContent=v});
+ const inc=$('incidentLabel'),ref=$('reflectedLabel'),trans=$('transmittedLabel');
+ if(inc)inc.textContent='ONDE INCIDENTE · '+deg(theta);
+ if(ref)ref.textContent='ONDE RÉFLÉCHIE · '+deg(theta);
+ if(trans)trans.textContent='ONDE TRANSMISE · '+deg(thetaT);
+ const angle=$('sceneAngle');if(angle)angle.textContent=deg(theta);
+ const note=$('sceneNote');if(note)note.textContent=({sphere:'SPHÈRES',prolate:'SPHÉROÏDES ALLONGÉS',oblate:'SPHÉROÏDES APLATIS',cube:'INCLUSIONS CUBIQUES'})[s.shape]+' · '+Math.round(s.por*100)+' %';
 }
-
 const c=x=>fmt(x.re,3)+(x.im<0?' − j':' + j')+fmt(Math.abs(x.im),3);$('gamma').textContent=c(result.Gamma);$('tau').textContent=c(result.tau);
 $('insight').innerHTML='<b>Lecture physique</b><p>'+(s.angle===0?'Incidence normale : les coefficients TE et TM sont identiques. ':'Incidence oblique : les admittances dépendent de la polarisation. ')+(s.por>0?'Les bulles diminuent la permittivité effective du béton. ':'Sans porosité, le mur est modélisé comme du béton plein. ')+(result.absorption>result.R?'Ici, la dissipation dans le mur domine la réflexion.':'Ici, la réflexion est supérieure à l’absorption.')+'</p>';
 $('sceneNote').textContent=({sphere:'SPHÈRES',prolate:'SPHÉROÏDES ALLONGÉS',oblate:'SPHÉROÏDES APLATIS',cube:'CUBES · GÉOMÉTRIE ILLUSTRATIVE'})[s.shape]+' · '+Math.round(s.por*100)+' %';
@@ -109,7 +124,7 @@ document.querySelectorAll('[data-por]').forEach(b=>b.addEventListener('click',()
 $('shape').addEventListener('change',()=>{s.shape=$('shape').value;$('aspect').disabled=s.shape==='cube'||s.shape==='sphere';calculate();rebuildBubbles()});$('inclusionType').addEventListener('change',()=>{calculate();rebuildBubbles()});
 ['wallColor','bubbleColor'].forEach(id=>$(id).addEventListener('input',()=>{if(id==='wallColor')mat.color.set($('wallColor').value);else rebuildBubbles()}));
 $('cutaway').addEventListener('change',()=>bubbleGroup.visible=$('cutaway').checked);$('wavefronts').addEventListener('change',()=>waveGroup.visible=$('wavefronts').checked);
-$('viewFront').onclick=()=>{camera.position.set(0,0,8);orbit.target.set(0,0,0);$('viewFront').classList.add('active');$('viewIso').classList.remove('active')};$('viewIso').onclick=()=>{camera.position.set(4.4,3.1,6.7);orbit.target.set(0,0,0);$('viewIso').classList.add('active');$('viewFront').classList.remove('active')};
+$('viewFront').onclick=()=>{ $('sceneWrap').classList.add('ray-view');$('viewFront').classList.add('active');$('viewIso').classList.remove('active')};$('viewIso').onclick=()=>{ $('sceneWrap').classList.remove('ray-view');camera.position.set(4.4,3.1,6.7);orbit.target.set(0,0,0);$('viewIso').classList.add('active');$('viewFront').classList.remove('active')};
 $('fullscreen').onclick=()=>{const el=$('sceneWrap');if(!document.fullscreenElement)el.requestFullscreen?.();else document.exitFullscreen?.()};
 const settingsDrawer=$('settingsDrawer'),settingsToggle=$('toggleControls');
 function setSettingsOpen(open){document.body.classList.toggle('settings-open',open);settingsToggle.setAttribute('aria-expanded',String(open));settingsToggle.textContent=open?'✕ Fermer':'☰ Paramètres'}
@@ -119,7 +134,7 @@ settingsToggle.addEventListener('click',()=>{
 });
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&document.body.classList.contains('settings-open'))setSettingsOpen(false)});
 setSettingsOpen(false);
-$('theme').onclick=()=>{document.body.classList.toggle('light');document.documentElement.dataset.theme=document.body.classList.contains('light')?'light':'dark'};
+$('theme').onclick=()=>{document.body.classList.toggle('light');document.documentElement.dataset.theme=document.body.classList.contains('light')?'light':'dark'};document.body.classList.add('light');$('sceneWrap').classList.add('ray-view');
 $('reset').onclick=()=>{layers=[{id:1,name:'Béton',material:'concrete',thicknessM:.09,eps:{re:6,im:-.18}}];nextLayerId=2;renderLayerList();Object.assign(s,{f:1e9,angle:0,pol:'TE',por:.2,thick:.09,eps:6,loss:.03,radius:.5,shape:'sphere',aspect:2,inclusionType:'air',saturation:1});$('shape').value='sphere';$('inclusionType').value='air';$('saturation').value=100;$('aspect').disabled=false;$('aspect').value=2;$('freq').value=1;$('angle').value=0;$('por').value=20;$('thick').value=9;$('eps').value=6;$('loss').value=.03;$('radius').value=.5;document.querySelectorAll('[data-pol]').forEach(b=>b.classList.toggle('selected',b.dataset.pol==='TE'));document.querySelectorAll('[data-por]').forEach(b=>b.classList.toggle('selected',b.dataset.por==='20'));calculate();rebuildBubbles()};
 $('export').onclick=()=>{const rows=sweepFrequency({layers:layers.map(l=>({name:l.name,material:l.material,thicknessM:l.thicknessM,eps:l.eps,shape:s.shape,aspectRatio:s.aspect})),fraction:s.por,frequencyMinHz:.5e9,frequencyMaxHz:6e9,thetaDeg:s.angle,polarization:s.pol,epsMatrix:matrixPermittivity(s.eps,s.loss),thicknessM:s.thick,shape:s.shape,aspectRatio:s.aspect,inclusionType:s.inclusionType,saturation:s.saturation,points:221});const csv=['frequence_GHz,reflection_R,transmission_T,absorption_A',...rows.map(p=>[p.x,p.R,p.T,p.A].join(','))].join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='bubblewave-resultats.csv';a.click();URL.revokeObjectURL(a.href)};
 const params=new URLSearchParams(location.search);if(params.has('shape')){$('shape').value=params.get('shape');s.shape=$('shape').value}if(params.has('aspect')){$('aspect').value=params.get('aspect');s.aspect=+$('aspect').value}if(s.shape==='cube'||s.shape==='sphere')$('aspect').disabled=true;if(params.has('f'))$('freq').value=params.get('f');if(params.has('p'))$('por').value=params.get('p');if(params.has('a'))$('angle').value=params.get('a');if(params.has('type')&&['air','water','ice','aggregate'].includes(params.get('type'))){$('inclusionType').value=params.get('type');s.inclusionType=params.get('type')}if(params.has('sat'))$('saturation').value=params.get('sat');if(params.has('pol')){s.pol=params.get('pol')==='TM'?'TM':'TE';document.querySelectorAll('[data-pol]').forEach(b=>b.classList.toggle('selected',b.dataset.pol===s.pol))}calculate();
