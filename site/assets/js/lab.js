@@ -74,7 +74,7 @@ function updateRayDiagram(time=0){
  const n0=Math.max(1.001,result.nReal||1.001);
  const layerData=result.layers?.length?result.layers:[{n:{re:n0},thicknessM:1}];
  const nValues=layerData.map(l=>Math.max(1.001,l.n?.re||n0));
- const angles=layerData.map(l=>Math.asin(clamp(Math.sin(theta)/nValues[l],0,1)));
+ const angles=layerData.map((l,i)=>Math.asin(clamp(Math.sin(theta)/nValues[i],0,1)));
  const incidentDy=155*Math.tan(theta),yIncident=clamp(y0+incidentDy,110,450),yReflected=clamp(y0-incidentDy,110,450);
  const set=(id,d)=>{const el=$(id);if(el)el.setAttribute('d',d)};
  const wavePath=(points,phase,amp=7,wavelength=48)=>{
