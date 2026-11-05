@@ -68,41 +68,51 @@ for(const [id,v] of [['R',result.R],['T',result.T],['A',result.absorption]])$(id
 for(const [id,v] of [['barR',result.R],['barT',result.T],['barA',result.absorption]])$(id).style.width=Math.max(0,v*100)+'%';
 $('balance').textContent='R + T + A = '+fmt((result.R+result.T+result.absorption)*100,3)+' %';$('balanceState').textContent=Math.abs(result.R+result.T+result.absorption-1)<1e-9?'Conservation vérifiée':'Vérifier le bilan';
 $('epsEff').textContent=fmt(epsEff.re,3)+' − j'+fmt(Math.abs(epsEff.im),3);$('indexEff').textContent=fmt(result.nReal,3);$('lambdaWall').textContent=fmt(result.lambdaWall*100,2)+' cm';$('atten').textContent=fmt(result.attenuationDb,2)+' dB';
-function updateRayDiagram(){
+function updateRayDiagram(time=0){
  const theta=s.angle*Math.PI/180,deg=x=>fmt(x*180/Math.PI,1)+'°',clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
- const x0=430,x1=655,y0=280,dx=x1-x0,thetaR=theta,thetaOut=theta;
- const firstN=Math.max(1.001,result.nReal||1.001);
- const layerData=result.layers?.length?result.layers:[{n:{re:firstN}}];
- const internalAngles=layerData.map(l=>Math.asin(clamp(Math.sin(theta)/Math.max(1.001,l.n?.re||firstN),0,1)));
- const incidentDy=155*Math.tan(theta),yIncident=clamp(y0+incidentDy,115,445),yReflected=clamp(y0-incidentDy,115,445);
+ const x0=430,x1=655,y0=280,thetaR=theta;
+ const n0=Math.max(1.001,result.nReal||1.001);
+ const layerData=result.layers?.length?result.layers:[{n:{re:n0},thicknessM:1}];
+ const nValues=layerData.map(l=>Math.max(1.001,l.n?.re||n0));
+ const angles=layerData.map(l=>Math.asin(clamp(Math.sin(theta)/nValues[l],0,1)));
+ const incidentDy=155*Math.tan(theta),yIncident=clamp(y0+incidentDy,110,450),yReflected=clamp(y0-incidentDy,110,450);
  const set=(id,d)=>{const el=$(id);if(el)el.setAttribute('d',d)};
- set('incidentRay',`M165 ${yIncident} L${x0} ${y0}`);
- set('reflectedRay',`M${x0} ${y0} L165 ${yReflected}`);
- let x=x0,y=y0,insidePath=`M${x0} ${y0}`;
- layerData.forEach((layer,i)=>{const width=dx*(Math.max(.001,layer.thicknessM||1)/Math.max(.001,result.totalThickness||1));x=i===layerData.length-1?x1:x0+dx*layerData.slice(0,i+1).reduce((a,l)=>a+(l.thicknessM||1),0)/Math.max(.001,result.totalThickness||1);y=clamp(y+width*Math.tan(internalAngles[i]),115,445);insidePath+=` L${x} ${y}`;});
- set('insideRay',insidePath);
+ const wavePath=(points,phase,amp=7,wavelength=48)=>{
+  const lengths=[0];let total=0;for(let i=1;i<points.length;i++){total+=Math.hypot(points[i][0]-points[i-1][0],points[i][1]-points[i-1][1]);lengths.push(total)}
+  if(total<1)return '';
+  const count=Math.max(36,Math.ceil(total/4)),out=[];
+  for(let k=0;k<=count;k++){const dist=total*k/count;let seg=1;while(seg<lengths.length-1&&lengths[seg]<dist)seg++;
+   const p=points[seg-1],q=points[seg],len=lengths[seg]-lengths[seg-1],u=len?(dist-lengths[seg-1])/len:0;
+   const tx=(q[0]-p[0])/(len||1),ty=(q[1]-p[1])/(len||1),nx=-ty,ny=tx;
+   const fade=Math.sin(Math.PI*k/count);const off=amp*fade*Math.sin(dist*(Math.PI*2/wavelength)-phase);
+   out.push([p[0]+(q[0]-p[0])*u+nx*off,p[1]+(q[1]-p[1])*u+ny*off]);
+  }
+  return out.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+ };
+ const phase=time*.006;
+ set('incidentRay',wavePath([[165,yIncident],[x0,y0]],phase,7,43));
+ set('reflectedRay',wavePath([[x0,y0],[165,yReflected]],phase+1.2,7,43));
+ let x=x0,y=y0,insidePoints=[[x0,y0]],sum=layerData.reduce((a,l)=>a+Math.max(.001,l.thicknessM||1),0);
+ layerData.forEach((layer,i)=>{x=i===layerData.length-1?x1:x0+(x1-x0)*layerData.slice(0,i+1).reduce((a,l)=>a+Math.max(.001,l.thicknessM||1),0)/sum;y=clamp(y+(i===layerData.length-1?x1-insidePoints[insidePoints.length-1][0]:x-insidePoints[insidePoints.length-1][0])*Math.tan(angles[i]),105,455);insidePoints.push([x,y])});
+ set('insideRay',wavePath(insidePoints,phase+2.1,5.5,39));
  const yExit=y;
- set('transmittedRay',`M${x1} ${yExit} L${x1+190} ${clamp(yExit+190*Math.tan(thetaOut),90,480)}`);
- const arc=(r,ang,sign)=>{const endX=x0-r*Math.cos(ang),endY=y0+sign*r*Math.sin(ang);return `M${x0-r} ${y0} A${r} ${r} 0 0 ${sign>0?0:1} ${endX} ${endY}`};
+ // Parallel outside media: Snell's law gives the same emergent angle as incidence.
+ set('transmittedRay',wavePath([[x1,yExit],[845,clamp(yExit+190*Math.tan(theta),80,490)]],phase+3.1,7,43));
+ const arc=(r,ang,sign)=>{const ex=x0-r*Math.cos(ang),ey=y0+sign*r*Math.sin(ang);return `M${x0-r} ${y0} A${r} ${r} 0 0 ${sign>0?0:1} ${ex} ${ey}`};
  set('incidentArc',arc(64,theta,1));set('reflectedArc',arc(82,theta,-1));
- set('transmittedArc',`M${x1+55} ${yExit} A55 55 0 0 1 ${x1+55*Math.cos(thetaOut)} ${yExit+55*Math.sin(thetaOut)}`);
- const insideAngle=internalAngles[0]||0;
- const labels=[['svgThetaI',`θᵢ = ${deg(theta)}`],['svgThetaR',`θᵣ = ${deg(thetaR)}`],['svgThetaT',`θₜ = ${deg(thetaOut)}`],['rayThetaI',deg(theta)],['rayThetaR',deg(thetaR)],['rayThetaOut',deg(thetaOut)]];
- labels.forEach(([id,v])=>{const el=$(id);if(el)el.textContent=v});
- const inc=$('incidentLabel'),ref=$('reflectedLabel'),trans=$('transmittedLabel');
- if(inc)inc.textContent='ONDE INCIDENTE · '+deg(theta);
- if(ref)ref.textContent='ONDE RÉFLÉCHIE · '+deg(thetaR);
- if(trans)trans.textContent='ONDE TRANSMISE · '+deg(thetaOut);
- const insideText=$('insideAngleLabel');if(insideText)insideText.textContent='θ dans le mur = '+deg(insideAngle);
- const angle=$('sceneAngle');if(angle)angle.textContent=deg(theta);
- const note=$('sceneNote');if(note)note.textContent=({sphere:'SPHÈRES',prolate:'SPHÉROÏDES ALLONGÉS',oblate:'SPHÉROÏDES APLATIS',cube:'INCLUSIONS CUBIQUES'})[s.shape]+' · '+Math.round(s.por*100)+' %';
-}const c=x=>fmt(x.re,3)+(x.im<0?' − j':' + j')+fmt(Math.abs(x.im),3);$('gamma').textContent=c(result.Gamma);$('tau').textContent=c(result.tau);
-$('insight').innerHTML='<b>Lecture physique</b><p>'+(s.angle===0?'Incidence normale : les coefficients TE et TM sont identiques. ':'Incidence oblique : les admittances dépendent de la polarisation. ')+(s.por>0?'Les bulles diminuent la permittivité effective du béton. ':'Sans porosité, le mur est modélisé comme du béton plein. ')+(result.absorption>result.R?'Ici, la dissipation dans le mur domine la réflexion.':'Ici, la réflexion est supérieure à l’absorption.')+'</p>';
-$('sceneNote').textContent=({sphere:'SPHÈRES',prolate:'SPHÉROÏDES ALLONGÉS',oblate:'SPHÉROÏDES APLATIS',cube:'CUBES · GÉOMÉTRIE ILLUSTRATIVE'})[s.shape]+' · '+Math.round(s.por*100)+' %';
-mat.color.set($('wallColor').value);wall.scale.z=Math.max(.3,result.totalThickness/.09);wall.position.z=0;rebuildLayerMarkers();renderSvgWall();bubbleGroup.scale.z=Math.max(.3,s.thick/.09);bubbleGroup.visible=$('cutaway').checked;waveGroup.visible=$('wavefronts').checked;
-updateRayDiagram();drawChart();updateUrl();
-}
-function drawChart(){const rows=sweepFrequency({layers:layers.map(l=>({name:l.name,material:l.material,thicknessM:l.thicknessM,eps:l.eps,shape:s.shape,aspectRatio:s.aspect})),fraction:s.por,frequencyMinHz:.5e9,frequencyMaxHz:6e9,thetaDeg:s.angle,polarization:s.pol,epsMatrix:matrixPermittivity(s.eps,s.loss),thicknessM:s.thick,layers:layers.map(l=>({name:l.name,material:l.material,thicknessM:l.thicknessM,eps:l.eps,shape:s.shape,aspectRatio:s.aspect})),shape:s.shape,aspectRatio:s.aspect,inclusionType:s.inclusionType,saturation:s.saturation,points:121});const canvas=$('chart'),ctx=canvas.getContext('2d'),w=canvas.clientWidth,h=220,dpr=Math.min(devicePixelRatio,2);canvas.width=w*dpr;canvas.height=h*dpr;ctx.scale(dpr,dpr);const L=34,R=10,T=12,B=24,pw=w-L-R,ph=h-T-B;ctx.clearRect(0,0,w,h);ctx.font='9px DM Mono';ctx.fillStyle='#8197ab';for(let i=0;i<=4;i++){const y=T+ph*i/4;ctx.strokeStyle='#263b4d';ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.fillText((100-i*25)+'%',2,y+3)}ctx.fillText('.5 GHz',L,h-5);ctx.fillText('6 GHz',w-48,h-5);for(const [key,color] of [['R','#ff806f'],['T','#50d6ad'],['A','#f3b85f']]){ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();rows.forEach((p,i)=>{const x=L+pw*i/(rows.length-1),y=T+ph*(1-p[key]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()}const ix=(s.f/1e9-.5)/5.5*pw;ctx.strokeStyle='#eaf3fa';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(L+ix,T);ctx.lineTo(L+ix,T+ph);ctx.stroke();ctx.setLineDash([])}
+ const thetaT=theta;
+ set('transmittedArc',`M${x1+55} ${yExit} A55 55 0 0 1 ${x1+55*Math.cos(thetaT)} ${yExit+55*Math.sin(thetaT)}`);
+ const insideAngle=angles[0]||0;
+ [['svgThetaI',`θᵢ = ${deg(theta)}`],['svgThetaR',`θᵣ = ${deg(thetaR)}`],['svgThetaT',`θₜ = ${deg(thetaT)}`],['rayThetaI',deg(theta)],['rayThetaR',deg(thetaR)],['rayThetaOut',deg(thetaT)]].forEach(([id,v])=>{const el=$(id);if(el)el.textContent=v});
+ if($('incidentLabel'))$('incidentLabel').textContent='ONDE INCIDENTE · '+deg(theta);
+ if($('reflectedLabel'))$('reflectedLabel').textContent='ONDE RÉFLÉCHIE · '+deg(thetaR);
+ if($('transmittedLabel'))$('transmittedLabel').textContent='ONDE TRANSMISE · '+deg(thetaT);
+ if($('insideAngleLabel'))$('insideAngleLabel').textContent='θ dans le mur = '+deg(insideAngle);
+ if($('sceneAngle'))$('sceneAngle').textContent=deg(theta);
+ if($('rayR'))$('rayR').textContent=fmt(result.R*100,1)+' %';
+ if($('rayT'))$('rayT').textContent=fmt(result.T*100,1)+' %';
+ if($('rayGamma'))$('rayGamma').textContent=fmt(Math.hypot(result.Gamma.re,result.Gamma.im),3);
+}function drawChart(){const rows=sweepFrequency({layers:layers.map(l=>({name:l.name,material:l.material,thicknessM:l.thicknessM,eps:l.eps,shape:s.shape,aspectRatio:s.aspect})),fraction:s.por,frequencyMinHz:.5e9,frequencyMaxHz:6e9,thetaDeg:s.angle,polarization:s.pol,epsMatrix:matrixPermittivity(s.eps,s.loss),thicknessM:s.thick,layers:layers.map(l=>({name:l.name,material:l.material,thicknessM:l.thicknessM,eps:l.eps,shape:s.shape,aspectRatio:s.aspect})),shape:s.shape,aspectRatio:s.aspect,inclusionType:s.inclusionType,saturation:s.saturation,points:121});const canvas=$('chart'),ctx=canvas.getContext('2d'),w=canvas.clientWidth,h=220,dpr=Math.min(devicePixelRatio,2);canvas.width=w*dpr;canvas.height=h*dpr;ctx.scale(dpr,dpr);const L=34,R=10,T=12,B=24,pw=w-L-R,ph=h-T-B;ctx.clearRect(0,0,w,h);ctx.font='9px DM Mono';ctx.fillStyle='#8197ab';for(let i=0;i<=4;i++){const y=T+ph*i/4;ctx.strokeStyle='#263b4d';ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.fillText((100-i*25)+'%',2,y+3)}ctx.fillText('.5 GHz',L,h-5);ctx.fillText('6 GHz',w-48,h-5);for(const [key,color] of [['R','#ff806f'],['T','#50d6ad'],['A','#f3b85f']]){ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();rows.forEach((p,i)=>{const x=L+pw*i/(rows.length-1),y=T+ph*(1-p[key]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()}const ix=(s.f/1e9-.5)/5.5*pw;ctx.strokeStyle='#eaf3fa';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(L+ix,T);ctx.lineTo(L+ix,T+ph);ctx.stroke();ctx.setLineDash([])}
 
 function renderLayerList(){
  const host=$('layerList');if(!host)return;
@@ -122,7 +132,7 @@ $('layerList')?.addEventListener('change',e=>{const id=Number(e.target.dataset.l
 $('layerList')?.addEventListener('click',e=>{const id=Number(e.target.dataset.removeLayer);if(!id||layers.length===1)return;layers=layers.filter(l=>l.id!==id);renderLayerList();calculate()});
 renderLayerList();
 
-let last=0;function animate(t){requestAnimationFrame(animate);const dt=Math.min(.05,(t-last)/1000||0);last=t;orbit.update();if(waveGroup?.visible)updateWavefronts(t);renderer.render(scene,camera)}requestAnimationFrame(animate);
+let last=0;function animate(t){requestAnimationFrame(animate);const dt=Math.min(.05,(t-last)/1000||0);last=t;orbit.update();if(waveGroup?.visible)updateWavefronts(t);if($('sceneWrap')?.classList.contains('ray-view'))updateRayDiagram(t);renderer.render(scene,camera)}requestAnimationFrame(animate);
 function updateUrl(){const u=new URL(location.href);u.searchParams.set('f',(s.f/1e9).toFixed(2));u.searchParams.set('p',(s.por*100).toFixed(0));u.searchParams.set('a',String(s.angle));u.searchParams.set('pol',s.pol);u.searchParams.set('shape',s.shape);u.searchParams.set('aspect',String(s.shape==='sphere'||s.shape==='cube'?1:s.aspect));u.searchParams.set('type',s.inclusionType);u.searchParams.set('sat',String(Math.round(s.saturation*100)));history.replaceState({},'',u)}
 ['freq','angle','por','thick','radius','aspect','saturation'].forEach(id=>$(id).addEventListener('input',()=>{if(id==='por')document.querySelectorAll('[data-por]').forEach(b=>b.classList.toggle('selected',+b.dataset.por===+$('por').value));calculate();if(id==='radius'||id==='por'||id==='aspect')rebuildBubbles()}));
 ['eps','loss'].forEach(id=>$(id).addEventListener('change',calculate));
