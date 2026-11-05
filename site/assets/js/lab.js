@@ -107,6 +107,10 @@ function updateRayDiagram(time=0){
  if($('incidentLabel'))$('incidentLabel').textContent='ONDE INCIDENTE · '+deg(theta);
  if($('reflectedLabel'))$('reflectedLabel').textContent='ONDE RÉFLÉCHIE · '+deg(thetaR);
  if($('transmittedLabel'))$('transmittedLabel').textContent='ONDE TRANSMISE · '+deg(thetaT);
+ const place=(id,x,y)=>{const el=$(id);if(el){el.setAttribute('x',clamp(x,20,960));el.setAttribute('y',clamp(y,35,530))}};
+ place('incidentLabel',Math.max(190,x0-205),yIncident-22);place('reflectedLabel',Math.max(170,x0-220),yReflected+32);place('transmittedLabel',700,clamp(yExit+70,130,500));
+ const moveText=(id,x,y)=>{const el=$(id);if(el){el.setAttribute('x',clamp(x,20,960));el.setAttribute('y',clamp(y,35,530))}};
+ moveText('svgThetaI',300,yIncident+(y0-yIncident)*.55-18);moveText('svgThetaR',285,yReflected+(y0-yReflected)*.45+24);moveText('svgThetaT',690,yExit+Math.tan(thetaT)*35-18);
  if($('insideAngleLabel'))$('insideAngleLabel').textContent='θ dans le mur = '+deg(insideAngle);
  if($('sceneAngle'))$('sceneAngle').textContent=deg(theta);
  if($('rayR'))$('rayR').textContent=fmt(result.R*100,1)+' %';
