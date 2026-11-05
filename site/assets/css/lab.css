@@ -111,3 +111,19 @@ body.light .ray-angle-readout b{color:#15334b}
 .scene-head p{color:#60798d}
 .ray-angle-readout{grid-template-columns:repeat(4,minmax(0,1fr))}
 @media(max-width:760px){.scene-wrap{min-height:330px}.ray-canvas{min-width:640px;width:100%;left:50%;transform:translateX(-50%)}.svg-label{font-size:12px}.svg-angle-text{font-size:12px}.scene-legend{max-width:95%;flex-wrap:wrap}}
+
+
+/* Animated ray diagram: visible SVG canvas, clean wave traces, no blank scene */
+#sceneWrap.ray-view{background:radial-gradient(ellipse at 50% 46%,#f9fdff 0%,#edf6fc 78%,#e6f0f7 100%)!important;min-height:500px;isolation:isolate}
+#sceneWrap.ray-view #rayCanvas{display:block!important;visibility:visible!important;opacity:1!important;background:transparent;overflow:visible}
+#sceneWrap.ray-view #scene{display:none!important}
+#rayCanvas .svg-ray{stroke-width:5.5;stroke-linecap:round;stroke-linejoin:round;fill:none;vector-effect:non-scaling-stroke}
+#rayCanvas .ray-orange{stroke-width:5}
+#rayCanvas .ray-results{filter:drop-shadow(0 3px 9px #244a6418)}
+#rayCanvas .svg-label{font-size:14px;letter-spacing:.2px}
+#rayCanvas .svg-angle-text{font-size:14px}
+#rayCanvas .ray-source{filter:drop-shadow(0 5px 8px #1e567733)}
+#rayCanvas .normal-line{stroke-dasharray:5 7}
+#rayCanvas .svg-wall-title{paint-order:stroke;stroke:#fff;stroke-width:5px}
+.scene-wrap.ray-view .scene-legend{bottom:10px}
+@media(max-width:900px){#sceneWrap.ray-view{min-height:420px}#rayCanvas{min-width:720px;width:100%;left:50%;transform:translateX(-50%)}}
