@@ -73,6 +73,8 @@ for(const [id,v] of [['R',result.R],['T',result.T],['A',result.absorption]])$(id
 for(const [id,v] of [['barR',result.R],['barT',result.T],['barA',result.absorption]])$(id).style.width=Math.max(0,v*100)+'%';
 $('balance').textContent='R + T + A = '+fmt((result.R+result.T+result.absorption)*100,3)+' %';$('balanceState').textContent=Math.abs(result.R+result.T+result.absorption-1)<1e-9?'Conservation vérifiée':'Vérifier le bilan';
 $('epsEff').textContent=fmt(epsEff.re,3)+' − j'+fmt(Math.abs(epsEff.im),3);$('indexEff').textContent=fmt(result.nReal,3);$('lambdaWall').textContent=fmt(result.lambdaWall*100,2)+' cm';$('atten').textContent=fmt(result.attenuationDb,2)+' dB';
+updateRayDiagram(performance.now());drawChart();rebuildLayerMarkers();
+}
 function updateRayDiagram(time=0){
  const theta=s.angle*Math.PI/180,deg=x=>fmt(x*180/Math.PI,1)+'°',clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
  const x0=430,x1=655,y0=280,thetaR=theta;
