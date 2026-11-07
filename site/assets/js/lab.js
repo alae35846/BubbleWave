@@ -149,7 +149,7 @@ document.querySelectorAll('[data-pol]').forEach(b=>b.addEventListener('click',()
 document.querySelectorAll('[data-por]').forEach(b=>b.addEventListener('click',()=>{$('por').value=b.dataset.por;document.querySelectorAll('[data-por]').forEach(x=>x.classList.toggle('selected',x===b));calculate();rebuildBubbles()}));
 $('shape').addEventListener('change',()=>{s.shape=$('shape').value;$('aspect').disabled=s.shape==='cube'||s.shape==='sphere';calculate();rebuildBubbles()});$('inclusionType').addEventListener('change',()=>{calculate();rebuildBubbles()});
 ['wallColor','bubbleColor'].forEach(id=>$(id).addEventListener('input',()=>{if(id==='wallColor'&&mat)mat.color.set($('wallColor').value);else rebuildBubbles()}));
-$('cutaway').addEventListener('change',()=>if(bubbleGroup)bubbleGroup.visible=$('cutaway').checked);$('wavefronts').addEventListener('change',()=>if(waveGroup)waveGroup.visible=$('wavefronts').checked);
+$('cutaway').addEventListener('change',()=>{if(bubbleGroup)bubbleGroup.visible=$('cutaway').checked});$('wavefronts').addEventListener('change',()=>{if(waveGroup)waveGroup.visible=$('wavefronts').checked});
 $('viewFront').onclick=()=>{ $('sceneWrap').classList.add('ray-view');$('viewFront').classList.add('active');$('viewIso').classList.remove('active')};$('viewIso').onclick=()=>{ $('sceneWrap').classList.remove('ray-view');if(threeReady){camera.position.set(4.4,3.1,6.7);orbit.target.set(0,0,0)}$('viewIso').classList.add('active');$('viewFront').classList.remove('active')};
 $('fullscreen').onclick=()=>{const el=$('sceneWrap');if(!document.fullscreenElement)el.requestFullscreen?.();else document.exitFullscreen?.()};
 const settingsDrawer=$('settingsDrawer'),settingsToggle=$('toggleControls');
