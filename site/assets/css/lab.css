@@ -167,26 +167,22 @@ body.light .controls{background:#fff;color:#102b40}
 #sceneWrap.ray-view .scene-legend{background:#fff;border:1px solid #d5dfe6;border-radius:5px;box-shadow:none;color:#41596a;font-size:10px}
 #sceneWrap.ray-view .scene-note{background:#fff;border:1px solid #d5dfe6;border-radius:5px;box-shadow:none;font:10px 'DM Mono',monospace;letter-spacing:1px}
 #sceneWrap.ray-view .ray-source{display:none!important}
-
-/* BubbleWave — composition aligned with the approved scientific mockup */
-.workspace{display:grid!important;grid-template-columns:274px minmax(0,1fr)!important;gap:16px!important;align-items:start!important;padding:16px!important}
-.controls{position:sticky!important;top:14px!important;left:auto!important;bottom:auto!important;width:auto!important;max-height:calc(100vh - 28px)!important;transform:none!important;overflow-y:auto!important;box-shadow:0 12px 32px #0002!important}
-body:not(.settings-open) .controls{transform:none!important}
-#toggleControls{display:none!important}
-.center-column{min-width:0}
-.scene-head{padding:4px 2px 12px}
-.scene-wrap,#sceneWrap.ray-view{height:690px!important;min-height:560px!important;display:grid!important;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr)!important;gap:10px!important;padding:10px!important;background:#f3f7fa!important;border:1px solid #d3e0e8!important;border-radius:14px!important;overflow:hidden!important;isolation:isolate}
-#scene,#sceneWrap.ray-view #scene{position:relative!important;inset:auto!important;grid-column:2!important;grid-row:1!important;width:100%!important;height:100%!important;min-width:0!important;display:block!important;visibility:visible!important;pointer-events:auto!important;z-index:1!important;border:1px solid #d3e0e8;border-radius:10px;background:linear-gradient(150deg,#e5eff5,#f8fbfd)!important;overflow:hidden}
-#scene canvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important}
-#rayCanvas,#sceneWrap.ray-view #rayCanvas{position:relative!important;inset:auto!important;grid-column:1!important;grid-row:1!important;width:100%!important;height:100%!important;min-width:0!important;transform:none!important;display:block!important;visibility:visible!important;opacity:1!important;background:#f8fbfd!important;border:1px solid #d3e0e8;border-radius:10px}
-.scene-legend{left:22px!important;top:22px!important;background:#ffffffeb!important;border:1px solid #d5e1e8!important;color:#425b6d!important;box-shadow:none!important}
-.scene-note{right:24px!important;top:22px!important;background:#ffffffeb;padding:9px 12px;border:1px solid #d5e1e8;border-radius:7px;color:#526b7b!important}
-.scene-foot{flex-wrap:wrap;gap:12px 22px}
-.chart-panel{margin-top:8px}
-.results{grid-column:2!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.results .panel-head{grid-column:1/-1}
-.topbar{min-height:82px}
-.brand{font-size:25px}
-.brand img{width:42px;height:42px}
-@media(max-width:1050px){.workspace{grid-template-columns:240px minmax(0,1fr)!important}.scene-wrap,#sceneWrap.ray-view{height:600px!important;grid-template-columns:1fr!important;grid-template-rows:1fr 1fr!important}#rayCanvas{grid-column:1!important;grid-row:1!important}#scene,#sceneWrap.ray-view #scene{grid-column:1!important;grid-row:2!important}.results{grid-column:1/-1!important}}
-@media(max-width:760px){.workspace{display:flex!important;flex-direction:column!important}.controls{position:relative!important;top:auto!important;width:100%!important;max-height:420px!important;order:2}.center-column{order:1;width:100%}.scene-wrap,#sceneWrap.ray-view{height:740px!important;grid-template-columns:1fr!important;grid-template-rows:1fr 1fr!important}.results{order:3;width:100%;display:block!important}.results .panel-head{display:flex!important}.results .energy-list{padding:17px 0 12px!important}.results .divider{display:block!important}}
+/* Single-view workspace: switch between the front ray diagram and the centered 3D model. */
+.workspace{display:grid!important;grid-template-columns:minmax(0,1fr) 290px!important;gap:14px!important;align-items:start!important;padding:16px!important}
+#toggleControls{display:inline-flex!important}
+.controls{position:fixed!important;z-index:30!important;left:12px!important;top:78px!important;bottom:12px!important;width:min(350px,calc(100vw - 24px))!important;max-height:calc(100vh - 90px)!important;overflow-y:auto!important;transform:translateX(calc(-100% - 24px))!important}
+body.settings-open .controls{transform:translateX(0)!important}
+.scene-wrap,#sceneWrap.ray-view{height:570px!important;min-height:480px!important;display:block!important;padding:0!important;position:relative!important;overflow:hidden!important}
+#rayCanvas,#sceneWrap.ray-view #rayCanvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;min-width:0!important;max-width:100%!important;transform:none!important;display:block!important;border:0!important;border-radius:0!important}
+#scene,#sceneWrap.ray-view #scene{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;display:block!important}
+#sceneWrap.ray-view #scene{display:none!important}
+#sceneWrap:not(.ray-view) #rayCanvas{display:none!important}
+#sceneWrap:not(.ray-view) #scene{display:block!important;visibility:visible!important}
+#sceneWrap:not(.ray-view) #scene canvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
+.results{grid-column:auto!important;display:block!important}
+.results .panel-head{display:flex!important}
+.results .energy-list{padding:17px 0 12px!important}
+.results .divider{display:block!important}
+.results .export{margin-top:15px!important}
+@media(max-width:1200px){.workspace{grid-template-columns:minmax(0,1fr)!important}.results{grid-column:auto!important;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important}.results .panel-head{grid-column:1/-1!important}}
+@media(max-width:760px){.workspace{display:flex!important;flex-direction:column!important}.center-column,.results{width:100%!important}.center-column{order:-1}.scene-wrap,#sceneWrap.ray-view{height:440px!important;min-height:360px!important}.controls{position:fixed!important;top:68px!important;bottom:8px!important;left:8px!important;width:min(350px,calc(100vw - 16px))!important;max-height:calc(100vh - 76px)!important;transform:translateX(calc(-100% - 16px))!important}.results{display:block!important}.results .panel-head{display:flex!important}.results .energy-list{padding:17px 0 12px!important}.results .divider{display:block!important}}
