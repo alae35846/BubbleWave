@@ -58,12 +58,13 @@
      <marker id="arrRed" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#e4473c"/></marker>
      <marker id="arrOrange" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#f29b27"/></marker>
      <marker id="arrGreen" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0L8 4L0 8Z" fill="#149b63"/></marker>
-     <pattern id="rayGrid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#9fc2d7" stroke-opacity=".22"/></pattern>
+     <pattern id="rayGrid" width="32" height="32" patternUnits="userSpaceOnUse"><path d="M32 0H0V32" fill="none" stroke="#b7cbd9" stroke-opacity=".16" stroke-width=".8"/></pattern>
+     <pattern id="concreteTexture" width="34" height="34" patternUnits="userSpaceOnUse"><rect width="34" height="34" fill="#c4cdd2"/><path d="M4 7l3-2 2 3-4 2zM22 4l2 1-1 3-3-2zM14 23l4-2 2 4-5 2zM29 27l2-1 1 3-3 1z" fill="#83939b" opacity=".22"/><circle cx="27" cy="13" r="1.2" fill="#71818a" opacity=".25"/><circle cx="7" cy="28" r="1" fill="#71818a" opacity=".3"/></pattern>
     </defs>
     <rect width="1000" height="560" fill="url(#rayGrid)"/>
     <path d="M165 301H835" class="normal-line"/><text x="168" y="291" class="svg-small">NORMALE À LA PAROI</text>
-    <rect x="430" y="95" width="225" height="370" rx="5" fill="url(#wallGlass)" stroke="#267fae" stroke-width="3"/>
-    <rect x="440" y="105" width="205" height="350" fill="#e6f7ff" fill-opacity=".18" stroke="#ffffff" stroke-opacity=".8"/>
+    <rect x="430" y="95" width="225" height="370" rx="2" fill="url(#wallGlass)" stroke="#6d8797" stroke-width="1.6"/>
+    <rect x="440" y="105" width="205" height="350" fill="url(#concreteTexture)" fill-opacity=".32" stroke="#ffffff" stroke-opacity=".65" stroke-width="1"/>
     <g id="wallLayerMarks"></g><g id="wallBubbles"></g>
     <text x="542" y="78" text-anchor="middle" class="svg-wall-title">MUR POREUX</text><text id="wallMeta" x="542" y="485" text-anchor="middle" class="svg-small">Béton · porosité 20 % · 1 couche</text>
     <path id="incidentRay" class="svg-ray ray-blue" marker-end="url(#arrBlue)"/>
@@ -103,5 +104,5 @@
 </main>
 <footer><span>BUBBLEWAVE · LABORATOIRE ÉLECTROMAGNÉTIQUE</span><span>Made by Touil Alae · Maxwell–Garnett + matrice de transfert</span></footer>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
-<script type="module" src="assets/js/lab.js?v=NO-SOURCE"></script>
+<script type="module" src="assets/js/lab.js?v=RAY-REFINED"></script>
 </body></html>
