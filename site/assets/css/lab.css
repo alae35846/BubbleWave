@@ -138,3 +138,9 @@ body.light .ray-angle-readout b{color:#15334b}
 .controls{background:#0d1b2b;color:#eaf3fa}
 body.light .controls{background:#fff;color:#102b40}
 @media(max-width:900px){#sceneWrap.ray-view #rayCanvas{min-width:0;left:0;transform:none}}
+
+/* Vue 3D : aucun calque SVG 2D ne doit recouvrir le canvas WebGL. */
+#sceneWrap:not(.ray-view) #rayCanvas{display:none!important;visibility:hidden!important;pointer-events:none!important}
+#sceneWrap:not(.ray-view) .scene-legend{display:none!important}
+#sceneWrap:not(.ray-view) #scene{visibility:visible!important;display:block!important;z-index:1}
+#sceneWrap:not(.ray-view) #scene canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
