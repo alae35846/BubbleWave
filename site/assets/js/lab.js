@@ -89,7 +89,7 @@ function updateWavefronts(t){
  ray3DGroup.clear();
  const addArrow=(origin,direction,color)=>{const a=new THREE.ArrowHelper(direction.clone().normalize(),origin,.82,color,.22,.12);ray3DGroup.add(a)};
  addArrow(start,incidentDir,0x087eea);addArrow(hit,reflectedDir,0xe4473c);addArrow(hit,insideDir,0xf29b27);addArrow(exit,transmittedDir,0x149b63);
- if(source3D){source3D.position.copy(start);source3D.position.y=0;source3D.quaternion.setFromUnitVectors(new THREE.Vector3(1,0,0),incidentDir.clone().negate())}
+ if(source3D){source3D.position.copy(start);source3D.position.y=0;source3D.quaternion.setFromUnitVectors(new THREE.Vector3(1,0,0),incidentDir)}
 }
 rebuildBubbles();rebuildWaves();
 function resize(){if(!threeReady||!renderer||!camera)return;const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}if(threeReady){new ResizeObserver(resize).observe(host);resize();}
