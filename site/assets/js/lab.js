@@ -86,9 +86,12 @@ function updateWavefronts(t){
   if(!arrow){arrow=new THREE.ArrowHelper(direction,origin,.8,color,.22,.12);arrow.name=key;ray3DGroup.add(arrow)}
   arrow.position.copy(origin);arrow.setDirection(direction);arrow.setLength(Math.max(.35,direction.length?.()||.8),.22,.12);
  };
- ray3DGroup.clear();
- const addArrow=(origin,direction,color)=>{const a=new THREE.ArrowHelper(direction.clone().normalize(),origin,.82,color,.22,.12);ray3DGroup.add(a)};
- addArrow(start,incidentDir,0x087eea);addArrow(hit,reflectedDir,0xe4473c);addArrow(hit,insideDir,0xf29b27);addArrow(exit,transmittedDir,0x149b63);
+ const arrows=[['incident',start,incidentDir,0x087eea],['reflected',hit,reflectedDir,0xe4473c],['inside',hit,insideDir,0xf29b27],['transmitted',exit,transmittedDir,0x149b63]];
+ arrows.forEach(([key,origin,direction,color])=>{
+  let arrow=ray3DGroup.getObjectByName(key);
+  if(!arrow){arrow=new THREE.ArrowHelper(direction.clone().normalize(),origin,.82,color,.22,.12);arrow.name=key;ray3DGroup.add(arrow)}
+  arrow.position.copy(origin);arrow.setDirection(direction.clone().normalize());arrow.setLength(.82,.22,.12);
+ });
  if(source3D){source3D.position.copy(start);source3D.position.y=0;source3D.quaternion.setFromUnitVectors(new THREE.Vector3(1,0,0),incidentDir)}
 }
 rebuildBubbles();rebuildWaves();
