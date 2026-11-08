@@ -116,6 +116,8 @@ function updateRayDiagram(time=0){
  const angles=layerData.map((l,i)=>Math.asin(clamp(Math.sin(theta)/nValues[i],0,1)));
  const incidentDy=155*Math.tan(theta),yIncident=clamp(y0+incidentDy,110,450),yReflected=clamp(y0-incidentDy,110,450);
  const set=(id,d)=>{const el=$(id);if(el)el.setAttribute('d',d)};
+ const source=$('rayCanvas')?.querySelector('.ray-source');
+ if(source)source.setAttribute('transform',`translate(52 ${yIncident-301}) rotate(${-s.angle} 116 51)`);
  const wavePath=(points,phase,amp=7,wavelength=48)=>{
   const lengths=[0];let total=0;for(let i=1;i<points.length;i++){total+=Math.hypot(points[i][0]-points[i-1][0],points[i][1]-points[i-1][1]);lengths.push(total)}
   if(total<1)return '';
