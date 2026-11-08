@@ -105,53 +105,53 @@ updateRayDiagram(performance.now());drawChart();rebuildLayerMarkers();
 }
 function updateRayDiagram(time=0){
  const theta=s.angle*Math.PI/180,deg=x=>fmt(x*180/Math.PI,1)+'°',clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
- const x0=430,x1=655,y0=280,thetaR=theta;
+ const x0=430,x1=655,y0=280;
  const n0=Math.max(1.001,result.nReal||1.001);
  const layerData=result.layers?.length?result.layers:[{n:{re:n0},thicknessM:1}];
  const nValues=layerData.map(l=>Math.max(1.001,l.n?.re||n0));
  const angles=layerData.map((l,i)=>Math.asin(clamp(Math.sin(theta)/nValues[i],0,1)));
- const incidentDy=155*Math.tan(theta),yIncident=clamp(y0+incidentDy,110,450),yReflected=clamp(y0-incidentDy,110,450);
+ // The incidence angle is measured from the horizontal surface normal.
+ // Shorten the external segments at steep angles so every ray stays in the drawing.
+ const incidentSpan=Math.min(265,160/Math.max(.0001,Math.tan(theta)));
+ const incidentStartX=x0-incidentSpan,incidentDy=incidentSpan*Math.tan(theta);
+ const yIncident=y0+incidentDy,yReflected=y0-incidentDy;
  const set=(id,d)=>{const el=$(id);if(el)el.setAttribute('d',d)};
- const wavePath=(points,phase,amp=7,wavelength=48)=>{
-  const lengths=[0];let total=0;for(let i=1;i<points.length;i++){total+=Math.hypot(points[i][0]-points[i-1][0],points[i][1]-points[i-1][1]);lengths.push(total)}
-  if(total<1)return '';
-  const count=Math.max(36,Math.ceil(total/4)),out=[];
-  for(let k=0;k<=count;k++){const dist=total*k/count;let seg=1;while(seg<lengths.length-1&&lengths[seg]<dist)seg++;
-   const p=points[seg-1],q=points[seg],len=lengths[seg]-lengths[seg-1],u=len?(dist-lengths[seg-1])/len:0;
-   const tx=(q[0]-p[0])/(len||1),ty=(q[1]-p[1])/(len||1),nx=-ty,ny=tx;
-   const fade=Math.sin(Math.PI*k/count);const off=amp*fade*Math.sin(dist*(Math.PI*2/wavelength)-phase);
-   out.push([p[0]+(q[0]-p[0])*u+nx*off,p[1]+(q[1]-p[1])*u+ny*off]);
-  }
-  return out.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
- };
+ const straightPath=points=>points.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
  const phase=time*.006;
- set('incidentRay',wavePath([[165,yIncident],[x0,y0]],phase,0,43));
- set('reflectedRay',wavePath([[x0,y0],[165,yReflected]],phase+1.2,0,43));
+ set('incidentRay',straightPath([[incidentStartX,yIncident],[x0,y0]]));
+ set('reflectedRay',straightPath([[x0,y0],[incidentStartX,yReflected]]));
  let x=x0,y=y0,insidePoints=[[x0,y0]],sum=layerData.reduce((a,l)=>a+Math.max(.001,l.thicknessM||1),0);
- layerData.forEach((layer,i)=>{x=i===layerData.length-1?x1:x0+(x1-x0)*layerData.slice(0,i+1).reduce((a,l)=>a+Math.max(.001,l.thicknessM||1),0)/sum;y=clamp(y+(i===layerData.length-1?x1-insidePoints[insidePoints.length-1][0]:x-insidePoints[insidePoints.length-1][0])*Math.tan(angles[i]),105,455);insidePoints.push([x,y])});
- set('insideRay',wavePath(insidePoints,phase+2.1,0,39));
+ layerData.forEach((layer,i)=>{
+  const nextX=i===layerData.length-1?x1:x0+(x1-x0)*layerData.slice(0,i+1).reduce((a,l)=>a+Math.max(.001,l.thicknessM||1),0)/sum;
+  y=clamp(y+(nextX-x)*Math.tan(angles[i]),105,455);x=nextX;insidePoints.push([x,y]);
+ });
+ set('insideRay',straightPath(insidePoints));
  const yExit=y;
- // Parallel outside media: Snell's law gives the same emergent angle as incidence.
- set('transmittedRay',wavePath([[x1,yExit],[845,clamp(yExit+190*Math.tan(theta),80,490)]],phase+3.1,0,43));
+ const transmitSpan=Math.min(190,(520-yExit)/Math.max(.0001,Math.tan(theta)));
+ const thetaT=theta; // parallel slab, same external medium on both sides
+ set('transmittedRay',straightPath([[x1,yExit],[x1+transmitSpan,yExit+transmitSpan*Math.tan(thetaT)]]));
  const arc=(r,ang,sign)=>{const ex=x0-r*Math.cos(ang),ey=y0+sign*r*Math.sin(ang);return `M${x0-r} ${y0} A${r} ${r} 0 0 ${sign>0?0:1} ${ex} ${ey}`};
- set('incidentArc',arc(64,theta,1));set('reflectedArc',arc(82,theta,-1));
- const thetaT=theta;
+ set('incidentArc',arc(64,theta,1));set('reflectedArc',arc(64,theta,-1));
  set('transmittedArc',`M${x1+55} ${yExit} A55 55 0 0 1 ${x1+55*Math.cos(thetaT)} ${yExit+55*Math.sin(thetaT)}`);
  const insideAngle=angles[0]||0;
- [['svgThetaI',`θᵢ = ${deg(theta)}`],['svgThetaR',`θᵣ = ${deg(thetaR)}`],['svgThetaT',`θₜ = ${deg(thetaT)}`],['rayThetaI',deg(theta)],['rayThetaR',deg(thetaR)],['rayThetaOut',deg(thetaT)]].forEach(([id,v])=>{const el=$(id);if(el)el.textContent=v});
+ [['svgThetaI',`θᵢ = ${deg(theta)}`],['svgThetaR',`θᵣ = ${deg(theta)}`],['svgThetaT',`θₜ = ${deg(thetaT)}`],['rayThetaI',deg(theta)],['rayThetaR',deg(theta)],['rayThetaOut',deg(thetaT)]].forEach(([id,v])=>{const el=$(id);if(el)el.textContent=v});
  if($('incidentLabel'))$('incidentLabel').textContent='ONDE INCIDENTE · '+deg(theta);
- if($('reflectedLabel'))$('reflectedLabel').textContent='ONDE RÉFLÉCHIE · '+deg(thetaR);
+ if($('reflectedLabel'))$('reflectedLabel').textContent='ONDE RÉFLÉCHIE · '+deg(theta);
  if($('transmittedLabel'))$('transmittedLabel').textContent='ONDE TRANSMISE · '+deg(thetaT);
  const place=(id,x,y)=>{const el=$(id);if(el){el.setAttribute('x',clamp(x,20,960));el.setAttribute('y',clamp(y,35,530))}};
- place('incidentLabel',Math.max(190,x0-205),yIncident-22);place('reflectedLabel',Math.max(170,x0-220),yReflected+32);place('transmittedLabel',700,clamp(yExit+70,130,500));
- const moveText=(id,x,y)=>{const el=$(id);if(el){el.setAttribute('x',clamp(x,20,960));el.setAttribute('y',clamp(y,35,530))}};
- moveText('svgThetaI',300,yIncident+(y0-yIncident)*.55-18);moveText('svgThetaR',285,yReflected+(y0-yReflected)*.45+24);moveText('svgThetaT',690,yExit+Math.tan(thetaT)*35-18);
+ place('incidentLabel',Math.max(175,x0-incidentSpan*.78),yIncident-18);
+ place('reflectedLabel',Math.max(175,x0-incidentSpan*.78),yReflected+30);
+ place('transmittedLabel',Math.min(820,x1+transmitSpan*.35),clamp(yExit+65,130,500));
+ place('svgThetaI',x0-115,y0+Math.sin(theta)*43+22);
+ place('svgThetaR',x0-115,y0-Math.sin(theta)*43-12);
+ place('svgThetaT',x1+75,yExit+Math.sin(thetaT)*34+18);
  if($('insideAngleLabel'))$('insideAngleLabel').textContent='θ dans le mur = '+deg(insideAngle);
  if($('sceneAngle'))$('sceneAngle').textContent=deg(theta);
  if($('rayR'))$('rayR').textContent=fmt(result.R*100,1)+' %';
  if($('rayT'))$('rayT').textContent=fmt(result.T*100,1)+' %';
  if($('rayGamma'))$('rayGamma').textContent=fmt(Math.hypot(result.Gamma.re,result.Gamma.im),3);
-}function drawChart(){const rows=sweepFrequency({layers:layers.map(l=>({name:l.name,material:l.material,thicknessM:l.thicknessM,eps:l.eps,shape:s.shape,aspectRatio:s.aspect})),fraction:s.por,frequencyMinHz:.5e9,frequencyMaxHz:6e9,thetaDeg:s.angle,polarization:s.pol,epsMatrix:matrixPermittivity(s.eps,s.loss),thicknessM:s.thick,layers:layers.map(l=>({name:l.name,material:l.material,thicknessM:l.thicknessM,eps:l.eps,shape:s.shape,aspectRatio:s.aspect})),shape:s.shape,aspectRatio:s.aspect,inclusionType:s.inclusionType,saturation:s.saturation,points:121});const canvas=$('chart'),ctx=canvas.getContext('2d'),w=canvas.clientWidth,h=220,dpr=Math.min(devicePixelRatio,2);canvas.width=w*dpr;canvas.height=h*dpr;ctx.scale(dpr,dpr);const L=34,R=10,T=12,B=24,pw=w-L-R,ph=h-T-B;ctx.clearRect(0,0,w,h);ctx.font='9px DM Mono';ctx.fillStyle='#8197ab';for(let i=0;i<=4;i++){const y=T+ph*i/4;ctx.strokeStyle='#263b4d';ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.fillText((100-i*25)+'%',2,y+3)}ctx.fillText('.5 GHz',L,h-5);ctx.fillText('6 GHz',w-48,h-5);for(const [key,color] of [['R','#ff806f'],['T','#50d6ad'],['A','#f3b85f']]){ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();rows.forEach((p,i)=>{const x=L+pw*i/(rows.length-1),y=T+ph*(1-p[key]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()}const ix=(s.f/1e9-.5)/5.5*pw;ctx.strokeStyle='#eaf3fa';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(L+ix,T);ctx.lineTo(L+ix,T+ph);ctx.stroke();ctx.setLineDash([])}
+}
+function drawChart(){const rows=sweepFrequency({layers:layers.map(l=>({name:l.name,material:l.material,thicknessM:l.thicknessM,eps:l.eps,shape:s.shape,aspectRatio:s.aspect})),fraction:s.por,frequencyMinHz:.5e9,frequencyMaxHz:6e9,thetaDeg:s.angle,polarization:s.pol,epsMatrix:matrixPermittivity(s.eps,s.loss),thicknessM:s.thick,layers:layers.map(l=>({name:l.name,material:l.material,thicknessM:l.thicknessM,eps:l.eps,shape:s.shape,aspectRatio:s.aspect})),shape:s.shape,aspectRatio:s.aspect,inclusionType:s.inclusionType,saturation:s.saturation,points:121});const canvas=$('chart'),ctx=canvas.getContext('2d'),w=canvas.clientWidth,h=220,dpr=Math.min(devicePixelRatio,2);canvas.width=w*dpr;canvas.height=h*dpr;ctx.scale(dpr,dpr);const L=34,R=10,T=12,B=24,pw=w-L-R,ph=h-T-B;ctx.clearRect(0,0,w,h);ctx.font='9px DM Mono';ctx.fillStyle='#8197ab';for(let i=0;i<=4;i++){const y=T+ph*i/4;ctx.strokeStyle='#263b4d';ctx.beginPath();ctx.moveTo(L,y);ctx.lineTo(w-R,y);ctx.stroke();ctx.fillText((100-i*25)+'%',2,y+3)}ctx.fillText('.5 GHz',L,h-5);ctx.fillText('6 GHz',w-48,h-5);for(const [key,color] of [['R','#ff806f'],['T','#50d6ad'],['A','#f3b85f']]){ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();rows.forEach((p,i)=>{const x=L+pw*i/(rows.length-1),y=T+ph*(1-p[key]);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()}const ix=(s.f/1e9-.5)/5.5*pw;ctx.strokeStyle='#eaf3fa';ctx.setLineDash([3,4]);ctx.beginPath();ctx.moveTo(L+ix,T);ctx.lineTo(L+ix,T+ph);ctx.stroke();ctx.setLineDash([])}
 
 function renderLayerList(){
  const host=$('layerList');if(!host)return;
