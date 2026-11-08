@@ -125,14 +125,14 @@ function updateRayDiagram(time=0){
   return out.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
  };
  const phase=time*.006;
- set('incidentRay',wavePath([[165,yIncident],[x0,y0]],phase,7,43));
- set('reflectedRay',wavePath([[x0,y0],[165,yReflected]],phase+1.2,7,43));
+ set('incidentRay',wavePath([[165,yIncident],[x0,y0]],phase,0,43));
+ set('reflectedRay',wavePath([[x0,y0],[165,yReflected]],phase+1.2,0,43));
  let x=x0,y=y0,insidePoints=[[x0,y0]],sum=layerData.reduce((a,l)=>a+Math.max(.001,l.thicknessM||1),0);
  layerData.forEach((layer,i)=>{x=i===layerData.length-1?x1:x0+(x1-x0)*layerData.slice(0,i+1).reduce((a,l)=>a+Math.max(.001,l.thicknessM||1),0)/sum;y=clamp(y+(i===layerData.length-1?x1-insidePoints[insidePoints.length-1][0]:x-insidePoints[insidePoints.length-1][0])*Math.tan(angles[i]),105,455);insidePoints.push([x,y])});
- set('insideRay',wavePath(insidePoints,phase+2.1,5.5,39));
+ set('insideRay',wavePath(insidePoints,phase+2.1,0,39));
  const yExit=y;
  // Parallel outside media: Snell's law gives the same emergent angle as incidence.
- set('transmittedRay',wavePath([[x1,yExit],[845,clamp(yExit+190*Math.tan(theta),80,490)]],phase+3.1,7,43));
+ set('transmittedRay',wavePath([[x1,yExit],[845,clamp(yExit+190*Math.tan(theta),80,490)]],phase+3.1,0,43));
  const arc=(r,ang,sign)=>{const ex=x0-r*Math.cos(ang),ey=y0+sign*r*Math.sin(ang);return `M${x0-r} ${y0} A${r} ${r} 0 0 ${sign>0?0:1} ${ex} ${ey}`};
  set('incidentArc',arc(64,theta,1));set('reflectedArc',arc(82,theta,-1));
  const thetaT=theta;
