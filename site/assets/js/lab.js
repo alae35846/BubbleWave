@@ -46,17 +46,13 @@ function renderSvgWall(){
 function rebuildBubbles(){renderSvgWall();if(!threeReady||!bubbleGroup)return;bubbleGroup.clear();const rand=seed(),count=Math.round(12+s.por*95),radius=.045+s.radius*.014;for(let i=0;i<count;i++){const r=radius*(.55+rand()*.9),geometry=s.shape==='cube'?new THREE.BoxGeometry(r*1.65,r*1.65,r*1.65):new THREE.SphereGeometry(r,22,16),m=new THREE.Mesh(geometry,new THREE.MeshPhysicalMaterial({color:$('bubbleColor').value,metalness:.05,roughness:.12,transparent:true,opacity:.72,transmission:.28,thickness:.12,clearcoat:1}));if(s.shape==='prolate')m.scale.set(1,1,s.aspect);else if(s.shape==='oblate')m.scale.set(1,1,1/s.aspect);m.rotation.set(rand()*Math.PI,rand()*Math.PI,rand()*Math.PI);m.position.set((rand()-.5)*2.8,(rand()-.5)*2.55,(rand()-.5)*.57);bubbleGroup.add(m)}renderSvgWall()}
 
 const waveLines={incident:null,reflected:null,transmitted:null,inside:null};
-let ray3DGroup=null,source3D=null;
+let ray3DGroup=null;
 function makeWaveLine(color){const geo=new THREE.BufferGeometry(),pts=Array.from({length:100},()=>new THREE.Vector3());geo.setFromPoints(pts);const line=new THREE.Line(geo,new THREE.LineBasicMaterial({color,transparent:true,opacity:1}));line.frustumCulled=false;return line}
 function rebuildWaves(){
  if(!threeReady)return;
  waveGroup?.removeFromParent();waveGroup=new THREE.Group();scene.add(waveGroup);
  for(const [key,color] of [['incident',0x087eea],['reflected',0xe4473c],['transmitted',0x149b63],['inside',0xf29b27]]){waveLines[key]=makeWaveLine(color);waveGroup.add(waveLines[key])}
  ray3DGroup?.removeFromParent();ray3DGroup=new THREE.Group();scene.add(ray3DGroup);
- source3D=new THREE.Group();
- const body=new THREE.Mesh(new THREE.CylinderGeometry(.12,.16,.52,24),new THREE.MeshStandardMaterial({color:0x29465c,metalness:.25,roughness:.45}));
- body.rotation.z=Math.PI/2;source3D.add(body);
- const lens=new THREE.Mesh(new THREE.SphereGeometry(.145,24,16),new THREE.MeshBasicMaterial({color:0x168df0}));lens.position.x=.28;source3D.add(lens);scene.add(source3D);
  updateWavefronts(0);
 }
 function updateWavefronts(t){
@@ -92,7 +88,7 @@ function updateWavefronts(t){
   if(!arrow){arrow=new THREE.ArrowHelper(direction.clone().normalize(),origin,.82,color,.22,.12);arrow.name=key;ray3DGroup.add(arrow)}
   arrow.position.copy(origin);arrow.setDirection(direction.clone().normalize());arrow.setLength(.82,.22,.12);
  });
- if(source3D){source3D.position.copy(start);source3D.position.y=0;source3D.quaternion.setFromUnitVectors(new THREE.Vector3(1,0,0),incidentDir)}
+
 }
 rebuildBubbles();rebuildWaves();
 function resize(){if(!threeReady||!renderer||!camera)return;const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}if(threeReady){new ResizeObserver(resize).observe(host);resize();}
@@ -116,8 +112,6 @@ function updateRayDiagram(time=0){
  const angles=layerData.map((l,i)=>Math.asin(clamp(Math.sin(theta)/nValues[i],0,1)));
  const incidentDy=155*Math.tan(theta),yIncident=clamp(y0+incidentDy,110,450),yReflected=clamp(y0-incidentDy,110,450);
  const set=(id,d)=>{const el=$(id);if(el)el.setAttribute('d',d)};
- const source=$('rayCanvas')?.querySelector('.ray-source');
- if(source)source.setAttribute('transform',`translate(52 ${yIncident-301}) rotate(${-s.angle} 116 51)`);
  const wavePath=(points,phase,amp=7,wavelength=48)=>{
   const lengths=[0];let total=0;for(let i=1;i<points.length;i++){total+=Math.hypot(points[i][0]-points[i-1][0],points[i][1]-points[i-1][1]);lengths.push(total)}
   if(total<1)return '';
