@@ -144,3 +144,26 @@ body.light .controls{background:#fff;color:#102b40}
 #sceneWrap:not(.ray-view) .scene-legend{display:none!important}
 #sceneWrap:not(.ray-view) #scene{visibility:visible!important;display:block!important;z-index:1}
 #sceneWrap:not(.ray-view) #scene canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
+
+/* Scientific front-view refinement: restrained materials, precise vectors, no cartoon effects. */
+#sceneWrap.ray-view{background:#f5f8fa!important;border:1px solid #cbd7df!important;border-radius:10px;min-height:500px}
+#sceneWrap.ray-view #rayCanvas{background-color:#f7fafc}
+#rayCanvas .svg-ray{stroke-width:3.1;stroke-linecap:butt;stroke-linejoin:round;filter:none;vector-effect:non-scaling-stroke}
+#rayCanvas .ray-orange{stroke-width:2.8}
+#rayCanvas .normal-line{stroke:#7d8d99;stroke-width:1.1;stroke-dasharray:5 6;opacity:.8}
+#rayCanvas .svg-angle{stroke-width:1.6;stroke-dasharray:none;opacity:.9}
+#rayCanvas .svg-label{font:600 12px Manrope,Arial,sans-serif;letter-spacing:.35px;paint-order:stroke;stroke:#f7fafc;stroke-width:3px}
+#rayCanvas .svg-angle-text{font:600 13px 'DM Mono',monospace;paint-order:stroke;stroke:#f7fafc;stroke-width:3px}
+#rayCanvas .svg-kicker{font:700 10px 'DM Mono',monospace;letter-spacing:1.1px;fill:#536a7b}
+#rayCanvas .svg-small{font:600 10px 'DM Mono',monospace;fill:#536a7b}
+#rayCanvas .svg-wall-title{font:700 16px Manrope,sans-serif;letter-spacing:1.25px;fill:#334e60}
+#rayCanvas .ray-results rect{fill:#fff;fill-opacity:.97;stroke:#d5dfe6;stroke-width:1;rx:5}
+#rayCanvas .ray-results .svg-label{font:700 12px 'DM Mono',monospace;stroke:none}
+#rayCanvas g[transform="translate(790 32)"] rect{fill:#fff;fill-opacity:.96;stroke:#d5dfe6;stroke-width:1;rx:5}
+#rayCanvas g[transform="translate(790 32)"] path{stroke-width:2.6}
+#rayCanvas #wallBubbles ellipse{fill:#8d9ba3!important;fill-opacity:.26!important;stroke:#657985!important;stroke-opacity:.68!important;stroke-width:1!important}
+#rayCanvas #wallBubbles ellipse+ellipse{fill:#fff!important;fill-opacity:.16!important;stroke:none!important}
+#rayCanvas #wallLayerMarks path{stroke:#758d9c!important;stroke-width:1!important;stroke-dasharray:3 5!important}
+#sceneWrap.ray-view .scene-legend{background:#fff;border:1px solid #d5dfe6;border-radius:5px;box-shadow:none;color:#41596a;font-size:10px}
+#sceneWrap.ray-view .scene-note{background:#fff;border:1px solid #d5dfe6;border-radius:5px;box-shadow:none;font:10px 'DM Mono',monospace;letter-spacing:1px}
+#sceneWrap.ray-view .ray-source{display:none!important}
