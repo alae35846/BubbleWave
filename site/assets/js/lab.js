@@ -46,21 +46,50 @@ function renderSvgWall(){
 function rebuildBubbles(){renderSvgWall();if(!threeReady||!bubbleGroup)return;bubbleGroup.clear();const rand=seed(),count=Math.round(12+s.por*95),radius=.045+s.radius*.014;for(let i=0;i<count;i++){const r=radius*(.55+rand()*.9),geometry=s.shape==='cube'?new THREE.BoxGeometry(r*1.65,r*1.65,r*1.65):new THREE.SphereGeometry(r,22,16),m=new THREE.Mesh(geometry,new THREE.MeshPhysicalMaterial({color:$('bubbleColor').value,metalness:.05,roughness:.12,transparent:true,opacity:.72,transmission:.28,thickness:.12,clearcoat:1}));if(s.shape==='prolate')m.scale.set(1,1,s.aspect);else if(s.shape==='oblate')m.scale.set(1,1,1/s.aspect);m.rotation.set(rand()*Math.PI,rand()*Math.PI,rand()*Math.PI);m.position.set((rand()-.5)*2.8,(rand()-.5)*2.55,(rand()-.5)*.57);bubbleGroup.add(m)}renderSvgWall()}
 
 const waveLines={incident:null,reflected:null,transmitted:null,inside:null};
-function makeWaveLine(color){const geo=new THREE.BufferGeometry(),pts=Array.from({length:120},()=>new THREE.Vector3());geo.setFromPoints(pts);const line=new THREE.Line(geo,new THREE.LineBasicMaterial({color,transparent:true,opacity:1,linewidth:3}));line.frustumCulled=false;return line}
+let ray3DGroup=null,source3D=null;
+function makeWaveLine(color){const geo=new THREE.BufferGeometry(),pts=Array.from({length:100},()=>new THREE.Vector3());geo.setFromPoints(pts);const line=new THREE.Line(geo,new THREE.LineBasicMaterial({color,transparent:true,opacity:1}));line.frustumCulled=false;return line}
 function rebuildWaves(){
  if(!threeReady)return;
  waveGroup?.removeFromParent();waveGroup=new THREE.Group();scene.add(waveGroup);
- for(const [key,color] of [['incident',0x63eaff],['reflected',0xff7568],['transmitted',0x39ffc0],['inside',0xffc247]]){waveLines[key]=makeWaveLine(color);waveGroup.add(waveLines[key])}
+ for(const [key,color] of [['incident',0x087eea],['reflected',0xe4473c],['transmitted',0x149b63],['inside',0xf29b27]]){waveLines[key]=makeWaveLine(color);waveGroup.add(waveLines[key])}
+ ray3DGroup?.removeFromParent();ray3DGroup=new THREE.Group();scene.add(ray3DGroup);
+ source3D=new THREE.Group();
+ const body=new THREE.Mesh(new THREE.CylinderGeometry(.12,.16,.52,24),new THREE.MeshStandardMaterial({color:0x29465c,metalness:.25,roughness:.45}));
+ body.rotation.z=Math.PI/2;source3D.add(body);
+ const lens=new THREE.Mesh(new THREE.SphereGeometry(.145,24,16),new THREE.MeshBasicMaterial({color:0x168df0}));lens.position.x=.28;source3D.add(lens);scene.add(source3D);
  updateWavefronts(0);
 }
 function updateWavefronts(t){
- const phase=t*.00055,amp=.16;
- const draw=(line,z,phaseOffset=0)=>{const a=line.geometry.attributes.position;for(let i=0;i<a.count;i++){const u=i/(a.count-1),x=-1.35+2.7*u,y=amp*Math.sin(u*Math.PI*4-phase*2+phaseOffset);a.setXYZ(i,x,y,z)}a.needsUpdate=true;line.geometry.computeBoundingSphere()};
- const travel=(start,span)=>((phase*1.15)%span)+start;
- draw(waveLines.incident,2.55-(phase*1.15%2.15));
- draw(waveLines.reflected,.42+(phase*1.15%2.15),Math.PI*.35);
- draw(waveLines.inside,.30-(phase*.48%0.60),Math.PI*.7);
- draw(waveLines.transmitted,-.42-(phase*1.15%2.15),Math.PI);
+ if(!threeReady||!waveLines.incident)return;
+ const theta=s.angle*Math.PI/180,ni=1,nt=Math.max(1.001,result?.nReal||1.001);
+ const thetaInside=Math.asin(Math.min(1,Math.sin(theta)/nt));
+ const xFace=.325,halfWall=1.5,impactX=THREE.MathUtils.clamp(-Math.sin(theta)*.72,-1.12,1.12);
+ const hit=new THREE.Vector3(impactX,0,xFace),len=1.65;
+ const incidentDir=new THREE.Vector3(Math.sin(theta),0,-Math.cos(theta)).normalize();
+ const reflectedDir=new THREE.Vector3(Math.sin(theta),0,Math.cos(theta)).normalize();
+ const insideDir=new THREE.Vector3(Math.sin(thetaInside),0,-Math.cos(thetaInside)).normalize();
+ const exit=hit.clone().add(insideDir.clone().multiplyScalar(.65/Math.max(.15,Math.cos(thetaInside))));
+ const transmittedDir=incidentDir.clone();
+ const start=hit.clone().add(incidentDir.clone().multiplyScalar(-len));
+ const endRef=hit.clone().add(reflectedDir.clone().multiplyScalar(len));
+ const endOut=exit.clone().add(transmittedDir.clone().multiplyScalar(len));
+ const phase=t*.004,amp=.055;
+ const draw=(line,a,b,offset=0)=>{
+  const attr=line.geometry.attributes.position,dir=b.clone().sub(a),normal=new THREE.Vector3(-dir.z,0,dir.x).normalize(),dist=dir.length();
+  for(let i=0;i<attr.count;i++){const u=i/(attr.count-1),p=a.clone().addScaledVector(dir,u);p.addScaledVector(normal,amp*Math.sin(u*dist*11-phase+offset));attr.setXYZ(i,p.x,p.y,p.z)}
+  attr.needsUpdate=true;line.geometry.computeBoundingSphere();
+ };
+ draw(waveLines.incident,start,hit,0);draw(waveLines.reflected,hit,endRef,1.2);
+ draw(waveLines.inside,hit,exit,2.1);draw(waveLines.transmitted,exit,endOut,3.1);
+ const placeArrow=(key,origin,direction,color)=>{
+  let arrow=ray3DGroup.getObjectByName(key);
+  if(!arrow){arrow=new THREE.ArrowHelper(direction,origin,.8,color,.22,.12);arrow.name=key;ray3DGroup.add(arrow)}
+  arrow.position.copy(origin);arrow.setDirection(direction);arrow.setLength(Math.max(.35,direction.length?.()||.8),.22,.12);
+ };
+ ray3DGroup.clear();
+ const addArrow=(origin,direction,color)=>{const a=new THREE.ArrowHelper(direction.clone().normalize(),origin,.82,color,.22,.12);ray3DGroup.add(a)};
+ addArrow(start,incidentDir,0x087eea);addArrow(hit,reflectedDir,0xe4473c);addArrow(hit,insideDir,0xf29b27);addArrow(exit,transmittedDir,0x149b63);
+ if(source3D){source3D.position.copy(start);source3D.position.y=0;source3D.quaternion.setFromUnitVectors(new THREE.Vector3(1,0,0),incidentDir.clone().negate())}
 }
 rebuildBubbles();rebuildWaves();
 function resize(){if(!threeReady||!renderer||!camera)return;const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}if(threeReady){new ResizeObserver(resize).observe(host);resize();}
